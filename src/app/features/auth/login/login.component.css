@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(167, 167, 167, 0.65);
+    backdrop-filter: blur(3px);
+}
+
+.error-text {
+    color: #e53935;
+    font-size: 11px;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+.login-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    overflow: hidden;
+    padding: 30px;
+    background: #fff;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.login-box::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    left: -70px;
+    width: 120px;
+    height: 100px;
+    background: #0b254d;
+    border-radius: 30%;
+    z-index: 1;
+}
+
+.login-box h2 {
+    text-align: center;
+    font-size: 18px;
+    margin: 25px 0;
+    font-weight: 600;
+}
+
+.icon-back {
+    position: absolute;
+    top: 4%;
+    left: 15px;
+    color: #fff;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.input-box {
+    position: relative;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-field {
+    width: 100%;
+    height: 38px;
+    font-size: 12px;
+    padding: 0 10px 0 32px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+}
+
+.input-field:focus {
+    border: 1px solid #0d47a1;
+}
+
+.input-box label {
+    position: absolute;
+    left: 30px;
+    top: 12px;
+    font-size: 12px;
+    color: #888;
+    pointer-events: none;
+    transition: 0.2s ease;
+}
+
+.input-field:focus~label,
+.input-field:not(:placeholder-shown)~label {
+    top: -15px;
+    font-size: 11px;
+    color: #0b254d;
+}
+
+.icon {
+    position: absolute;
+    left: 10px;
+    top: 11px;
+    font-size: 16px;
+    color: #666;
+    transition: 0.2s ease;
+}
+
+.input-field:focus~.icon,
+.input-field:not(:placeholder-shown)~.icon {
+    top: -15px;
+    font-size: 14px;
+    left: 12px;
+    color: #0b254d;
+}
+
+.btn-submit {
+    width: 100%;
+    height: 36px;
+    margin-top: 10px;
+    background: #0b254d;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-text {
+    position: absolute;
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    width: 0;
+    height: 10px;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    background: #0d3d84;
+    transform: scaleX(0.95) scaleY(1.1);
+}
+
+.btn-submit:hover .btn-icon {
+    width: 20px;
+    height: 10px;
+    opacity: 1;
+    transform: translateX(25px);
+}
+
+.btn-submit:hover .btn-text {
+    transform: translatex(-10px);
+}
+
+.password-forgot {
+    text-align: left;
+    margin-top: 15px;
+    font-size: 12px;
+}
+
+.password-forgot a {
+    color: #0b254d;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.password-forgot a:hover {
+    text-decoration: underline;
+}
+
+.register-text {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 12px;
+    color: #555;
+}
+
+.register-text a {
+    color: #0b254d;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.register-text a:hover {
+    text-decoration: underline;
+}
