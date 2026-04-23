@@ -10,7 +10,7 @@ export class AuthService {
 
   private API_URL = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   login(data: LoginRequest) {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, data);
@@ -30,6 +30,18 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  forgotPassword(email: string) {
+    return this.http.post(`${this.API_URL}/forgot-password`, { email });
+  }
+
+  verifyCode(data: { email: string, code: string }) {
+    return this.http.post<any>(`${this.API_URL}/verify-code`, data);
+  }
+
+  resetPassword(data: { email: string; code: string; newPassword: string }) {
+    return this.http.post(`${this.API_URL}/reset-password`, data);
   }
 
 }

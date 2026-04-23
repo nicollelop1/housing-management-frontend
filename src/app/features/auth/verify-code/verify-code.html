@@ -1,0 +1,33 @@
+<div class="verify-wrapper">
+    <div class="overlay"></div>
+
+    <div class="verify-box">
+
+        <span class="bx bx-arrow-back icon-back" routerLink="/forgot-password"></span>
+
+        <h2>Verificación de código</h2>
+
+        <p class="subtitle">
+            Ingresa el código de 6 dígitos enviado a
+            <strong>{{ email }}</strong>
+        </p>
+
+        <div class="code-inputs">
+            <input *ngFor="let digit of code; let i = index; trackBy: trackByIndex" type="text" maxlength="1"
+                [value]="code[i]" (input)="handleInput($event, i)" (keydown)="onKeyDown($event, i)"
+                class="code-input" />
+        </div>
+
+        <p class="error" *ngIf="errorMessage">
+            {{ errorMessage }}
+        </p>
+
+        <button (click)="onSubmit()">Verificar código</button>
+
+        <p class="resend">
+            ¿No recibiste el código?
+            <a class="resend-link" (click)="resendCode()">Reenviar</a>
+        </p>
+
+    </div>
+</div>
