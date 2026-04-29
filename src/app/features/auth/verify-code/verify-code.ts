@@ -1,10 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
-import { NgIf, NgFor } from '@angular/common';
-import { isPlatformBrowser } from '@angular/common';
-import { Inject, PLATFORM_ID } from '@angular/core';
+import { NgIf, NgFor, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-verify-code',
@@ -14,9 +12,11 @@ import { Inject, PLATFORM_ID } from '@angular/core';
   styleUrls: ['./verify-code.css'],
 })
 export class VerifyCode implements OnInit {
+
   code: string[] = ['', '', '', '', '', ''];
-  email: string = 'test@email.com';
+  email: string = '';
   errorMessage = '';
+  submitted = false;
 
   constructor(
     private authService: AuthService,
@@ -25,13 +25,11 @@ export class VerifyCode implements OnInit {
   ) { }
 
   ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
+    this.email = this.authService.recoveryData.email;
 
-      const savedEmail = localStorage.getItem('recoveryEmail');
+    if (!this.email) {
+      this.router.navigate(['/forgot-password']);
 
-      if (savedEmail) {
-        this.email = savedEmail;
-      }
     }
   }
 
@@ -39,27 +37,32 @@ export class VerifyCode implements OnInit {
     return index;
   }
 
+  get isCodeComplete(): boolean {
+    return /^[0-9]{6}$/.test(this.code.join(''));
+  }
+
+  get digitsCompleted(): number {
+    return this.code.filter(d => d !== '').length;
+  }
+
   handleInput(event: any, index: number) {
     const input = event.target as HTMLInputElement;
-    const value = input.value;
-
-    const char = value.slice(-1);
+    const char = input.value.slice(-1);
 
     if (char && /^[0-9]$/.test(char)) {
       this.code[index] = char;
-
       if (index < 5) {
         const nextInput = input.nextElementSibling as HTMLInputElement;
         nextInput?.focus();
       }
     } else {
       this.code[index] = '';
+      input.value = '';
     }
   }
 
   onKeyDown(event: KeyboardEvent, index: number) {
     const input = event.target as HTMLInputElement;
-
     if (event.key === 'Backspace') {
       if (!this.code[index] && index > 0) {
         const prevInput = input.previousElementSibling as HTMLInputElement;
@@ -73,37 +76,35 @@ export class VerifyCode implements OnInit {
   resendCode() {
     this.authService.forgotPassword(this.email).subscribe({
       next: () => {
-        this.errorMessage = 'Código reenviado';
+        this.errorMessage = 'Código reenviado a tu correo';
       },
       error: () => {
         this.errorMessage = 'Error al reenviar código';
       }
     });
   }
-  onSubmit() {
-    const fullCode = this.code.join('');
 
-    if (fullCode.length < 6) {
-      this.errorMessage = 'Por favor ingresa el código completo.';
+  onSubmit() {
+    this.submitted = true;
+
+    if (!this.isCodeComplete) {
+      this.errorMessage = 'Ingresa los 6 dígitos del código';
       return;
     }
 
     this.errorMessage = '';
 
-    this.authService.verifyCode({
-      email: this.email,
-      code: fullCode
-    }).subscribe({
+    this.authService.verifyCode({ email: this.email, code: this.code.join('') }).subscribe({
       next: (response) => {
         if (response.valid) {
-          localStorage.setItem('recoveryCode', fullCode);
+          this.authService.recoveryData.code = this.code.join('');
           this.router.navigate(['/reset-password']);
         } else {
-          this.errorMessage = 'El código es incorrecto.';
+          this.errorMessage = 'El código es incorrecto';
         }
       },
       error: () => {
-        this.errorMessage = 'Error al verificar. El código pudo expirar.';
+        this.errorMessage = 'Error al verificar. El código pudo haber expirado';
       }
     });
   }

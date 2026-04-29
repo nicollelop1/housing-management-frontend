@@ -1,51 +1,49 @@
 import { Component } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
-import { NgIf } from '@angular/common';
+import { Location, NgIf } from '@angular/common';
+import { CustomValidators } from '../../../shared/components/validators/custom-validators';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [ReactiveFormsModule, NgIf],
   templateUrl: './forgot-password.html',
   styleUrls: ['./forgot-password.css'],
 })
 export class ForgotPassword {
 
-  email: string = '';
+  form: FormGroup;
   errorMessage = '';
 
-  private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
   constructor(
+    private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
     private location: Location
-  ) {}
-
-  isEmailValid(): boolean {
-    return this.emailRegex.test(this.email);
+  ) {
+    this.form = this.fb.group({
+      email: ['', [Validators.required, CustomValidators.email]]
+    });
   }
+
+  get email() { return this.form.get('email')!; }
 
   goBack() {
     this.location.back();
   }
 
-  onSubmit(form: NgForm) {
+  onSubmit() {
+    this.form.markAllAsTouched();
 
-    form.control.markAllAsTouched();
-
-    if (form.invalid || !this.isEmailValid()) return;
+    if (this.form.invalid) return;
 
     this.errorMessage = '';
 
-    this.authService.forgotPassword(this.email).subscribe({
+    this.authService.forgotPassword(this.email.value).subscribe({
       next: () => {
-
-        localStorage.setItem('recoveryEmail', this.email);
-
+        this.authService.recoveryData.email = this.email.value;
         this.router.navigate(['/verify-code']);
       },
       error: () => {

@@ -6,36 +6,74 @@
 
         <h2>Iniciar Sesión</h2>
 
-        <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
             <div class="input-box">
-                <input type="email" class="input-field" [(ngModel)]="email" name="email" #emailRef="ngModel" required
-                    placeholder=" ">
-                <p *ngIf="emailRef.touched && !isEmailValid()" class="error-text">
-                    Email inválido (ej: correo@gmail.com)
-                </p>
+                <input
+                    type="email"
+                    class="input-field"
+                    formControlName="email"
+                    placeholder=" "
+                    [class.input-error]="email.invalid && email.touched"
+                />
                 <i class="bx bx-envelope icon"></i>
                 <label>Email</label>
+
+                <p *ngIf="email.touched && email.hasError('required')" class="error-text">
+                    El email es obligatorio
+                </p>
+                <p *ngIf="email.touched && email.hasError('invalidEmail')" class="error-text">
+                    Email inválido (ej: correo&#64;gmail.com)
+                </p>
             </div>
 
             <div class="input-box">
-                <input type="password" class="input-field" [(ngModel)]="password" name="password" #passwordRef="ngModel"
-                    required minlength="8" placeholder=" ">
-                <p *ngIf="passwordRef.invalid && passwordRef.touched" class="error-text">
-                    Minimo 8 caracteres
-                </p>
-
+                <input
+                    type="password"
+                    class="input-field"
+                    formControlName="password"
+                    placeholder=" "
+                    [class.input-error]="password.invalid && password.touched"
+                />
                 <i class="bx bx-lock icon"></i>
                 <label>Contraseña</label>
+
+                <p *ngIf="password.touched && password.hasError('required')" class="error-text">
+                    La contraseña es obligatoria
+                </p>
+            </div>
+
+            <div class="password-requirements" *ngIf="password.value">
+                <p class="req-title">Requisitos mínimos:</p>
+
+                <div class="req-item" [class.req-ok]="hasMinLength" [class.req-fail]="!hasMinLength">
+                    <i class="bx" [class.bx-check]="hasMinLength" [class.bx-x]="!hasMinLength"></i>
+                    Mínimo 8 caracteres
+                </div>
+                <div class="req-item" [class.req-ok]="hasUpperCase" [class.req-fail]="!hasUpperCase">
+                    <i class="bx" [class.bx-check]="hasUpperCase" [class.bx-x]="!hasUpperCase"></i>
+                    Al menos una mayúscula
+                </div>
+                <div class="req-item" [class.req-ok]="hasNumber" [class.req-fail]="!hasNumber">
+                    <i class="bx" [class.bx-check]="hasNumber" [class.bx-x]="!hasNumber"></i>
+                    Al menos un número
+                </div>
+                <div class="req-item" [class.req-ok]="hasSymbol" [class.req-fail]="!hasSymbol">
+                    <i class="bx" [class.bx-check]="hasSymbol" [class.bx-x]="!hasSymbol"></i>
+                    Al menos un símbolo (&#64; $ ! % * ? &amp;)
+                </div>
             </div>
 
             <div class="password-forgot">
-                <a routerLink="/forgot-password" >¿Olvidaste tu contraseña?</a>
+                <a routerLink="/forgot-password">¿Olvidaste tu contraseña?</a>
             </div>
 
-            <button type="submit" class="btn-submit">
-                <span class="btn-text">Ingresar</span>
+            <button type="submit" class="btn-submit" [disabled]="loading">
+                <span class="btn-text">{{ loading ? 'Ingresando...' : 'Ingresar' }}</span>
                 <i class="bx bx-arrow-from-left btn-icon"></i>
             </button>
+
+            <p *ngIf="errorMessage" class="error-text error-general">{{ errorMessage }}</p>
 
             <div class="register-text">
                 No tienes cuenta? <a routerLink="/register">Regístrate</a>

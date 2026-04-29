@@ -13,16 +13,31 @@
         </p>
 
         <div class="code-inputs">
-            <input *ngFor="let digit of code; let i = index; trackBy: trackByIndex" type="text" maxlength="1"
-                [value]="code[i]" (input)="handleInput($event, i)" (keydown)="onKeyDown($event, i)"
-                class="code-input" />
+            <input
+                *ngFor="let digit of code; let i = index; trackBy: trackByIndex"
+                type="text"
+                maxlength="1"
+                [value]="code[i]"
+                (input)="handleInput($event, i)"
+                (keydown)="onKeyDown($event, i)"
+                class="code-input"
+                [class.code-input-filled]="code[i] !== ''"
+                [class.code-input-error]="submitted && code[i] === ''"
+                inputmode="numeric"
+            />
         </div>
+
+        <p class="digits-hint" *ngIf="!isCodeComplete && digitsCompleted > 0">
+            {{ digitsCompleted }} de 6 dígitos ingresados
+        </p>
 
         <p class="error" *ngIf="errorMessage">
             {{ errorMessage }}
         </p>
 
-        <button (click)="onSubmit()">Verificar código</button>
+        <button (click)="onSubmit()" [class.btn-ready]="isCodeComplete">
+            Verificar código
+        </button>
 
         <p class="resend">
             ¿No recibiste el código?

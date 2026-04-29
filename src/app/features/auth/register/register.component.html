@@ -1,1 +1,136 @@
-<p>register works!</p>
+<div class="register-wrapper">
+    <div class="overlay"></div>
+
+    <div class="register-box">
+
+        <div class="side-panel">
+            <div class="circle-lg"></div>
+            <div class="circle-sm"></div>
+            <i class="bx bx-arrow-back icon-back" (click)="goBack()"></i>
+            <div class="side-content">
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <h2>Registrarse</h2>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="form-grid">
+
+                    <div class="input-box">
+                        <input type="text" class="input-field" formControlName="primerNombre" placeholder=" "
+                            [class.input-error]="primerNombre.invalid && primerNombre.touched" />
+                        <i class="bx bx-user icon"></i>
+                        <label>Primer nombre</label>
+                        <p *ngIf="primerNombre.touched && primerNombre.hasError('required')" class="error-text">Obligatorio</p>
+                        <p *ngIf="primerNombre.touched && primerNombre.hasError('onlyLetters')" class="error-text">Solo letras</p>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="text" class="input-field" formControlName="segundoNombre" placeholder=" "
+                            [class.input-error]="segundoNombre.invalid && segundoNombre.touched" />
+                        <i class="bx bx-user icon"></i>
+                        <label>Segundo nombre <span class="optional">(opcional)</span></label>
+                        <p *ngIf="segundoNombre.touched && segundoNombre.hasError('onlyLetters')" class="error-text">Solo letras</p>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="text" class="input-field" formControlName="primerApellido" placeholder=" "
+                            [class.input-error]="primerApellido.invalid && primerApellido.touched" />
+                        <i class="bx bx-user icon"></i>
+                        <label>Primer apellido</label>
+                        <p *ngIf="primerApellido.touched && primerApellido.hasError('required')" class="error-text">Obligatorio</p>
+                        <p *ngIf="primerApellido.touched && primerApellido.hasError('onlyLetters')" class="error-text">Solo letras</p>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="text" class="input-field" formControlName="segundoApellido" placeholder=" "
+                            [class.input-error]="segundoApellido.invalid && segundoApellido.touched" />
+                        <i class="bx bx-user icon"></i>
+                        <label>Segundo apellido <span class="optional">(opcional)</span></label>
+                        <p *ngIf="segundoApellido.touched && segundoApellido.hasError('onlyLetters')" class="error-text">Solo letras</p>
+                    </div>
+
+                    <div class="input-box col-full">
+                        <input type="email" class="input-field" formControlName="email" placeholder=" "
+                            [class.input-error]="email.invalid && email.touched" />
+                        <i class="bx bx-envelope icon"></i>
+                        <label>Email</label>
+                        <p *ngIf="email.touched && email.hasError('required')" class="error-text">El email es obligatorio</p>
+                        <p *ngIf="email.touched && email.hasError('invalidEmail')" class="error-text">Email inválido (ej: correo&#64;gmail.com)</p>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="text" class="input-field" formControlName="cedula" placeholder=" " maxlength="15"
+                            [class.input-error]="cedula.invalid && cedula.touched" />
+                        <i class="bx bx-id-card icon"></i>
+                        <label>Cédula</label>
+                        <p *ngIf="cedula.touched && cedula.hasError('required')" class="error-text">Obligatoria</p>
+                        <p *ngIf="cedula.touched && cedula.hasError('onlyNumbers')" class="error-text">Solo números</p>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="number" class="input-field" formControlName="edad" placeholder=" " min="18" max="120"
+                            [class.input-error]="edad.invalid && edad.touched" />
+                        <i class="bx bx-calendar icon"></i>
+                        <label>Edad</label>
+                        <p *ngIf="edad.touched && edad.hasError('required')" class="error-text">Obligatoria</p>
+                        <p *ngIf="edad.touched && (edad.hasError('min') || edad.hasError('max'))" class="error-text">Entre 18 y 120 años</p>
+                    </div>
+
+                    <div class="input-box col-full">
+                        <input type="tel" class="input-field" formControlName="phoneNumber" placeholder=" " maxlength="10"
+                            [class.input-error]="phoneNumber.invalid && phoneNumber.touched" />
+                        <i class="bx bx-phone icon"></i>
+                        <label>Teléfono</label>
+                        <p *ngIf="phoneNumber.touched && phoneNumber.hasError('required')" class="error-text">El teléfono es obligatorio</p>
+                        <p *ngIf="phoneNumber.touched && phoneNumber.hasError('invalidPhone')" class="error-text">Debe tener exactamente 10 dígitos</p>
+                    </div>
+
+                    <div class="input-box col-full">
+                        <input type="password" class="input-field" formControlName="password" placeholder=" "
+                            [class.input-error]="password.invalid && password.touched" />
+                        <i class="bx bx-lock icon"></i>
+                        <label>Contraseña</label>
+                        <p *ngIf="password.touched && password.hasError('required')" class="error-text">La contraseña es obligatoria</p>
+                    </div>
+
+                    <div class="password-requirements col-full" *ngIf="password.value">
+                        <p class="req-title">Requisitos mínimos:</p>
+                        <div class="req-item" [class.req-ok]="hasMinLength" [class.req-fail]="!hasMinLength">
+                            <i class="bx" [class.bx-check]="hasMinLength" [class.bx-x]="!hasMinLength"></i>
+                            Mínimo 8 caracteres
+                        </div>
+                        <div class="req-item" [class.req-ok]="hasUpperCase" [class.req-fail]="!hasUpperCase">
+                            <i class="bx" [class.bx-check]="hasUpperCase" [class.bx-x]="!hasUpperCase"></i>
+                            Al menos una mayúscula
+                        </div>
+                        <div class="req-item" [class.req-ok]="hasNumber" [class.req-fail]="!hasNumber">
+                            <i class="bx" [class.bx-check]="hasNumber" [class.bx-x]="!hasNumber"></i>
+                            Al menos un número
+                        </div>
+                        <div class="req-item" [class.req-ok]="hasSymbol" [class.req-fail]="!hasSymbol">
+                            <i class="bx" [class.bx-check]="hasSymbol" [class.bx-x]="!hasSymbol"></i>
+                            Al menos un símbolo (&#64; $ ! % * ? &amp;)
+                        </div>
+                    </div>
+
+                    <div class="col-full">
+                        <button type="submit" class="btn-submit" [disabled]="loading">
+                            <span class="btn-text">{{ loading ? 'Registrando...' : 'Registrarse' }}</span>
+                            <i class="bx bx-arrow-from-left btn-icon"></i>
+                        </button>
+
+                        <p *ngIf="errorMessage" class="error-text error-general">{{ errorMessage }}</p>
+
+                        <div class="register-text">
+                            ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

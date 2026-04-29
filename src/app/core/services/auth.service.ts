@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,10 +10,19 @@ export class AuthService {
 
   private API_URL = `${environment.apiUrl}/auth`;
 
+  recoveryData = {
+    email: '',
+    code: ''
+  };
+
   constructor(private http: HttpClient) { }
 
   login(data: LoginRequest) {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, data);
+  }
+
+  register(data: RegisterRequest) {
+    return this.http.post(`${this.API_URL}/register`, data);
   }
 
   setToken(token: string) {
