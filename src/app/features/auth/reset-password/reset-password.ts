@@ -73,5 +73,7 @@ export class ResetPassword implements OnInit {
         this.errorMessage = 'Error al restablecer la contraseña. El código pudo expirar.';
       }
     });
+
+    
   }
 }

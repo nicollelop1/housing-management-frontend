@@ -96,13 +96,23 @@ export class VerifyCode implements OnInit {
 
     this.authService.verifyCode({ email: this.email, code: this.code.join('') }).subscribe({
       next: (response) => {
-        if (response.valid) {
-          this.authService.recoveryData.code = this.code.join('');
-          this.router.navigate(['/reset-password']);
-        } else {
-          this.errorMessage = 'El código es incorrecto';
-        }
+        console.log(response); 
+
+        const finalCode = this.code.join('');
+
+        this.authService.recoveryData = {
+          email: this.email,
+          code: finalCode
+        };
+
+        localStorage.setItem('recoveryData', JSON.stringify({
+          email: this.email,
+          code: finalCode
+        }));
+
+        this.router.navigate(['/reset-password']);
       },
+
       error: () => {
         this.errorMessage = 'Error al verificar. El código pudo haber expirado';
       }

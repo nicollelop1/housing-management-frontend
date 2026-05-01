@@ -7,7 +7,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (
     req.url.includes('/auth/login') ||
     req.url.includes('/auth/forgot-password') ||
-    req.url.includes('/auth/verify-code') 
+    req.url.includes('/auth/verify-code') ||
+     req.url.includes('/auth/reset-password')  
   ) {
     return next(req);
   }
