@@ -1,0 +1,146 @@
+<div class="tr-page">
+
+    <div class="page-header">
+        <div class="header-left">
+            <h1><i class='bx bx-file-find'></i> Mis solicitudes enviadas</h1>
+            <p class="subtitle">Revisa el estado de las propiedades que has solicitado arrendar.</p>
+        </div>
+        <button class="btn-refresh" (click)="loadRequests()" [disabled]="loading">
+            <i class='bx' [class.bx-refresh]="!loading" [class.bx-loader-circle]="loading"
+                [class.bx-spin]="loading"></i>
+            Actualizar
+        </button>
+    </div>
+
+    <div class="filter-bar">
+        <button
+            *ngFor="let f of filters"
+            class="filter-btn"
+            [class.active]="activeFilter === f.key"
+            (click)="setFilter(f.key)">
+            {{ f.label }}
+            <span class="badge">{{ countByStatus(f.key) }}</span>
+        </button>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        Cargando solicitudes...
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filteredRequests.length === 0">
+        <i class='bx bx-search-alt'></i>
+        <h3>No hay solicitudes</h3>
+        <p *ngIf="activeFilter === 'ALL'">Aún no has enviado ninguna solicitud de arriendo.</p>
+        <p *ngIf="activeFilter !== 'ALL'">No tienes solicitudes con estado "{{ activeFilter | lowercase }}".</p>
+        <a routerLink="/home" class="btn-explore">
+            <i class='bx bx-home'></i> Explorar propiedades
+        </a>
+    </div>
+
+    <div class="request-list" *ngIf="!loading && filteredRequests.length > 0">
+
+        <div class="request-card" *ngFor="let req of filteredRequests">
+
+            <div class="card-top">
+                <span class="status-badge" [ngClass]="statusClass(req.status)">
+                    <i class='bx' [ngClass]="'bx-' + statusIcon(req.status).replace('bx-','')"></i>
+                    {{ formatStatus(req.status) }}
+                </span>
+                <span class="card-date">
+                    <i class='bx bx-calendar'></i>
+                    Enviada el {{ formatDate(req.createdAt) }}
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <span class="info-label"><i class='bx bx-home'></i> Propiedad</span>
+                        <a class="info-value link" [routerLink]="['/properties-detail', getPropertyId(req)]">
+                            Ver propiedad →
+                        </a>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label"><i class='bx bx-money'></i> Renta propuesta</span>
+                        <span class="info-value highlight">{{ formatCurrency(req.proposedRent) }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label"><i class='bx bx-calendar-check'></i> Inicio deseado</span>
+                        <span class="info-value">{{ formatDate(req.startDate) }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label"><i class='bx bx-calendar-x'></i> Fin deseado</span>
+                        <span class="info-value">{{ formatDate(req.endDate) }}</span>
+                    </div>
+
+                    <div class="info-item" *ngIf="req.respondedAt">
+                        <span class="info-label"><i class='bx bx-check'></i> Fecha de respuesta</span>
+                        <span class="info-value">{{ formatDate(req.respondedAt) }}</span>
+                    </div>
+
+                </div>
+
+                <div class="status-message" [ngClass]="'msg-' + req.status.toLowerCase()"
+                    *ngIf="req.status !== 'PENDING'">
+                    <i class='bx'
+                        [class.bx-check-circle]="req.status === 'ACCEPTED'"
+                        [class.bx-x-circle]="req.status === 'REJECTED'"
+                        [class.bx-minus-circle]="req.status === 'CANCELLED'"></i>
+                    <span *ngIf="req.status === 'ACCEPTED'">
+                        Tu solicitud fue aceptada. ¡El propietario ha creado un contrato!
+                    </span>
+                    <span *ngIf="req.status === 'REJECTED'">
+                        Lo sentimos, el propietario ha rechazado tu solicitud.
+                    </span>
+                    <span *ngIf="req.status === 'CANCELLED'">
+                        Cancelaste esta solicitud.
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="card-actions" *ngIf="req.status === 'PENDING'">
+                <button class="btn-cancel-req" (click)="askCancel(req.requestId)">
+                    <i class='bx bx-x'></i> Cancelar solicitud
+                </button>
+                <a class="btn-view-prop" [routerLink]="['/properties-detail', getPropertyId(req)]">
+                    <i class='bx bx-show'></i> Ver propiedad
+                </a>
+            </div>
+
+            <div class="card-actions card-actions--accepted" *ngIf="req.status === 'ACCEPTED'">
+                <a class="btn-view-contract" routerLink="/contracts">
+                    <i class='bx bx-file'></i> Ver mis contratos
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-overlay" *ngIf="cancelTargetId" (click)="cancelDialog()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <i class='bx bx-error-circle modal-icon'></i>
+        <h3>¿Cancelar solicitud?</h3>
+        <p>
+            Esta acción retirará tu solicitud. Solo puedes cancelarla si aún está
+            en estado <strong>Pendiente</strong>.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel-modal" (click)="cancelDialog()" [disabled]="cancelling">
+                Volver
+            </button>
+            <button class="btn-confirm-cancel" (click)="confirmCancel()" [disabled]="cancelling">
+                <i class='bx bx-x'></i>
+                {{ cancelling ? 'Cancelando...' : 'Sí, cancelar' }}
+            </button>
+        </div>
+    </div>
+</div>

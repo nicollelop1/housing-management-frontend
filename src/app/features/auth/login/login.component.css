@@ -5,6 +5,10 @@
     font-family: 'Inter', sans-serif;
 }
 
+.login-wrapper > * {
+    pointer-events: all;
+}
+
 .overlay {
     position: fixed;
     inset: 0;
@@ -36,6 +40,7 @@
     background: #fff;
     border-radius: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 21;
 }
 
 .login-box::before {

@@ -1,0 +1,134 @@
+<div class="profile-form-page">
+
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        Cargando perfil...
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+        <div class="form-header">
+            <h1><i class='bx bx-edit-alt'></i> Editar perfil</h1>
+            <p>Actualiza tu información personal.</p>
+        </div>
+
+        <div class="profile-layout">
+
+            <aside class="profile-sidebar">
+                <div class="avatar-card">
+
+                    <div class="avatar-wrap">
+                        <img [src]="avatarUrl" [alt]="currentName" class="avatar-img"
+                            (error)="$any($event.target).src = 'https://ui-avatars.com/api/?background=0b254d&color=fff&size=200&bold=true&name=U'">
+                    </div>
+
+                    <h2 class="sidebar-name">{{ currentName }}</h2>
+                    <p class="sidebar-email">{{ profile?.email }}</p>
+
+                    <label class="btn-upload-photo">
+                        <i class='bx bx-camera'></i>
+                        {{ avatarPreview ? 'Cambiar foto' : 'Subir foto' }}
+                        <input type="file" accept="image/*" (change)="onAvatarChange($event)" style="display:none">
+                    </label>
+
+                    <button *ngIf="avatarPreview" type="button" class="btn-remove-photo" (click)="removeAvatarPreview()">
+                        <i class='bx bx-x'></i> Quitar foto nueva
+                    </button>
+
+                    <p class="avatar-hint">JPG o PNG · máx. 5 MB</p>
+                    <p class="avatar-note" *ngIf="avatarPreview">
+                        <i class='bx bx-info-circle'></i>
+                        La foto se guardará cuando el backend tenga el endpoint de imagen. Por ahora solo se muestra aquí.
+                    </p>
+
+                </div>
+            </aside>
+
+            <main class="profile-content">
+
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class='bx bx-id-card'></i>
+                            Información personal
+                        </h3>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Primer nombre <span class="req">*</span></label>
+                                <input formControlName="primerNombre" type="text" placeholder="Ej: María">
+                                <span class="err"
+                                    *ngIf="form.get('primerNombre')!.touched && form.get('primerNombre')!.invalid">
+                                    El primer nombre es obligatorio
+                                </span>
+                            </div>
+                            <div class="field">
+                                <label>Segundo nombre</label>
+                                <input formControlName="segundoNombre" type="text" placeholder="Opcional">
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Primer apellido <span class="req">*</span></label>
+                                <input formControlName="primerApellido" type="text" placeholder="Ej: Gómez">
+                                <span class="err"
+                                    *ngIf="form.get('primerApellido')!.touched && form.get('primerApellido')!.invalid">
+                                    El primer apellido es obligatorio
+                                </span>
+                            </div>
+                            <div class="field">
+                                <label>Segundo apellido</label>
+                                <input formControlName="segundoApellido" type="text" placeholder="Opcional">
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Edad <span class="req">*</span></label>
+                                <input formControlName="edad" type="number" min="1" max="120" placeholder="Ej: 28">
+                                <span class="err"
+                                    *ngIf="form.get('edad')!.touched && form.get('edad')!.invalid">
+                                    Ingresa una edad válida (1–120)
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class='bx bx-phone'></i>
+                            Contacto
+                        </h3>
+
+                        <div class="field col-full">
+                            <label>Correo electrónico</label>
+                            <input type="text" [value]="profile?.email ?? ''" disabled class="input-disabled">
+                            <span class="field-hint">El correo no se puede cambiar desde aquí.</span>
+                        </div>
+
+                        <div class="field col-full" style="margin-top: 16px">
+                            <label>Teléfono</label>
+                            <input formControlName="phoneNumber" type="tel" placeholder="Ej: +57 300 000 0000">
+                        </div>
+
+                    </div>
+
+                    <div class="form-footer">
+                        <a routerLink="/profile/view" class="btn-cancel">Cancelar</a>
+                        <button type="submit" class="btn-submit" [disabled]="saving">
+                            {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+                        </button>
+                    </div>
+
+                </form>
+
+            </main>
+
+        </div>
+
+    </ng-container>
+
+</div>

@@ -1,1 +1,157 @@
-<p>home works!</p>
+<div class="home-page home-fullscreen">
+
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="hero-badge">Housing App</span>
+      <h1>Encuentra el lugar perfecto para vivir</h1>
+      <p>Explora apartamentos, casas y más en las mejores ubicaciones. Tu nuevo hogar te espera.</p>
+    </div>
+  </section>
+
+  <section class="search-section">
+    <div class="search-box">
+
+      <div class="search-field">
+        <label><i class='bx bx-map'></i> Ciudad</label>
+        <input type="text" placeholder="Bogotá, Pereira, Medellín..." [(ngModel)]="filters.city"
+               (keyup.enter)="searchProperties()">
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-buildings'></i> Tipo</label>
+        <select [(ngModel)]="filters.typeProperty">
+          <option [ngValue]="undefined">Todos</option>
+          <option *ngFor="let type of propertyTypes" [ngValue]="type">{{ formatType(type) }}</option>
+        </select>
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-bed'></i> Habitaciones</label>
+        <input type="number" min="1" [(ngModel)]="filters.bedrooms" placeholder="Cualquiera">
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-dollar'></i> Precio mín.</label>
+        <input type="number" [(ngModel)]="filters.minPrice" placeholder="Sin mínimo">
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-dollar'></i> Precio máx.</label>
+        <input type="number" [(ngModel)]="filters.maxPrice" placeholder="Sin máximo">
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-dog'></i> Mascotas</label>
+        <select [(ngModel)]="filters.petsAllowed">
+          <option [ngValue]="undefined">Todos</option>
+          <option [ngValue]="true">Permitidas</option>
+          <option [ngValue]="false">No permitidas</option>
+        </select>
+      </div>
+
+      <div class="search-field">
+        <label><i class='bx bx-sofa'></i> Amoblado</label>
+        <select [(ngModel)]="filters.furnished">
+          <option [ngValue]="undefined">Todos</option>
+          <option [ngValue]="true">Sí</option>
+          <option [ngValue]="false">No</option>
+        </select>
+      </div>
+
+      <div class="search-actions">
+        <button class="btn-search" (click)="searchProperties()" [disabled]="loading">
+          <i class='bx bx-search'></i>
+          {{ loading ? 'Buscando...' : 'Buscar' }}
+        </button>
+        <button class="btn-clear" (click)="clearFilters()" [disabled]="loading">
+          <i class='bx bx-x'></i>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="properties-section">
+
+    <div class="section-header">
+      <div>
+        <h2>{{ isSearching ? 'Resultados de búsqueda' : 'Propiedades destacadas' }}</h2>
+        <p *ngIf="!loading">
+          {{ isSearching
+              ? (properties.length > 0 ? properties.length + ' propiedad(es) encontrada(s)' : 'Sin resultados para tu búsqueda')
+              : 'Explora las mejores opciones disponibles' }}
+        </p>
+      </div>
+
+      <div class="carousel-controls" *ngIf="!isSearching">
+        <button class="carousel-btn left-btn"  (click)="scrollCarousel('left')">
+          <i class='bx bx-chevron-left'></i>
+        </button>
+        <button class="carousel-btn right-btn" (click)="scrollCarousel('right')">
+          <i class='bx bx-chevron-right'></i>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      Buscando propiedades...
+    </div>
+
+    <div *ngIf="!loading && isSearching && properties.length === 0" class="empty-state">
+      <i class='bx bx-search-alt'></i>
+      <h3>No encontramos propiedades</h3>
+      <p>Intenta con otros filtros o limpia la búsqueda.</p>
+      <button class="btn-clear-big" (click)="clearFilters()">
+        <i class='bx bx-refresh'></i> Ver todas las propiedades
+      </button>
+    </div>
+
+    <div *ngIf="!loading && isSearching && properties.length > 0"
+         class="properties-grid">
+      <article class="property-card" *ngFor="let property of properties">
+        <ng-container *ngTemplateOutlet="propertyCardTpl; context: { $implicit: property }"></ng-container>
+      </article>
+    </div>
+
+    <div *ngIf="!loading && !isSearching"
+         class="properties-carousel" id="propertyCarousel">
+      <article class="property-card" *ngFor="let property of properties">
+        <ng-container *ngTemplateOutlet="propertyCardTpl; context: { $implicit: property }"></ng-container>
+      </article>
+    </div>
+
+  </section>
+
+</div>
+
+<ng-template #propertyCardTpl let-property>
+  <div class="property-image-wrapper">
+    <img [src]="getMainImage(property)" [alt]="property.title" (error)="onImageError($event)" loading="lazy">
+    <span class="property-type">{{ property.transactionType === 'RENT' ? 'Arriendo' : 'Venta' }}</span>
+  </div>
+
+  <div class="property-content">
+    <h3>{{ property.title }}</h3>
+    <p class="property-location" *ngIf="property.address?.city">
+      <i class='bx bx-map-pin'></i> {{ property.address.city }}, {{ property.address.state }}
+    </p>
+    <p class="property-description">{{ property.description }}</p>
+
+    <div class="property-meta">
+      <span *ngIf="property.numberOfBedrooms"><i class='bx bx-bed'></i> {{ property.numberOfBedrooms }}</span>
+      <span *ngIf="property.numberOfBathrooms"><i class='bx bx-bath'></i> {{ property.numberOfBathrooms }}</span>
+      <span *ngIf="property.areaInSquareMeters"><i class='bx bx-area'></i> {{ property.areaInSquareMeters }}m²</span>
+    </div>
+
+    <div class="property-footer">
+      <div class="price-section">
+        <span class="price-label">Precio</span>
+        <div class="property-price">{{ property.priceAmount | currency:'COP':'symbol':'1.0-0' }}</div>
+      </div>
+      <a class="details-btn" [routerLink]="['/properties-detail', property.id]">
+        Ver detalle
+      </a>
+    </div>
+  </div>
+</ng-template>

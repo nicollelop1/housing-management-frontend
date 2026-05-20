@@ -1,0 +1,144 @@
+<div class="or-page">
+
+    <div class="page-header">
+        <div class="header-left">
+            <h1><i class='bx bx-inbox'></i> Solicitudes recibidas</h1>
+            <p class="subtitle">Revisa y responde las solicitudes de arriendo de tus propiedades</p>
+        </div>
+        <button class="btn-refresh" (click)="loadRequests()" [disabled]="loading">
+            <i class='bx bx-refresh' [class.bx-spin]="loading"></i>
+            Actualizar
+        </button>
+    </div>
+
+    <div class="filter-bar">
+
+        <button *ngFor="let f of filters" class="filter-btn" [class.active]="activeFilter === f.key"
+            (click)="setFilter(f.key)">
+            {{ f.label }}
+            <span class="badge">{{ countByStatus(f.key) }}</span>
+        </button>
+
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        Cargando solicitudes...
+    </div>
+
+    <div *ngIf="!loading && filteredRequests.length === 0" class="empty-state">
+        <i class='bx bx-message-square-x'></i>
+        <h3>No hay solicitudes{{ activeFilter !== 'ALL' ? ' en este estado' : '' }}</h3>
+        <p *ngIf="activeFilter === 'ALL'">
+            Cuando alguien solicite arrendar una de tus propiedades, aparecerá aquí.
+        </p>
+        <p *ngIf="activeFilter !== 'ALL'">
+            Prueba cambiando el filtro para ver otras solicitudes.
+        </p>
+    </div>
+
+    <div class="request-list" *ngIf="!loading && filteredRequests.length > 0">
+
+        <div class="request-card" *ngFor="let req of filteredRequests">
+
+            <div class="card-top">
+                <span class="status-badge" [ngClass]="statusClass(req.status)">
+                    <i class='bx' [class.bx-time]="req.status === 'PENDING'"
+                        [class.bx-check-circle]="req.status === 'ACCEPTED'"
+                        [class.bx-x-circle]="req.status === 'REJECTED'"
+                        [class.bx-minus-circle]="req.status === 'CANCELLED'"></i>
+                    {{ formatStatus(req.status) }}
+                </span>
+                <span class="card-date">
+                    <i class='bx bx-calendar'></i>
+                    Recibida el {{ formatDate(req.createdAt) }}
+                </span>
+            </div>
+
+            <div class="card-body">
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            <i class='bx bx-buildings'></i> Propiedad
+                        </span>
+                        <a class="info-value link" [routerLink]="['/properties-detail', getPropertyId(req)]">
+                            Ver propiedad →
+                        </a>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            <i class='bx bx-user'></i> Arrendatario ID
+                        </span>
+                        <span class="info-value">#{{ req.tenantId }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            <i class='bx bx-money'></i> Renta propuesta
+                        </span>
+                        <span class="info-value highlight">{{ formatCurrency(req.proposedRent) }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            <i class='bx bx-calendar-range'></i> Período solicitado
+                        </span>
+                        <span class="info-value">
+                            {{ formatDate(req.startDate) }} → {{ formatDate(req.endDate) }}
+                        </span>
+                    </div>
+
+                    <div class="info-item" *ngIf="req.respondedAt">
+                        <span class="info-label">
+                            <i class='bx bx-check'></i> Respondida el
+                        </span>
+                        <span class="info-value">{{ formatDate(req.respondedAt) }}</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-actions" *ngIf="req.status === 'PENDING'">
+
+                <button class="btn-accept" (click)="accept(req)" [disabled]="isActing(req.requestId)">
+                    <i class='bx' [class.bx-check]="!isActing(req.requestId)"
+                        [class.bx-loader-circle]="isActing(req.requestId)"
+                        [class.bx-spin]="isActing(req.requestId)"></i>
+                    {{ isActing(req.requestId) ? 'Aceptando...' : 'Aceptar' }}
+                </button>
+
+                <button class="btn-reject" (click)="askReject(req.requestId)" [disabled]="isActing(req.requestId)">
+                    <i class='bx bx-x'></i> Rechazar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-overlay" *ngIf="rejectTargetId" (click)="cancelReject()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <i class='bx bx-error-circle modal-icon'></i>
+        <h3>¿Rechazar solicitud?</h3>
+        <p>
+            Esta acción notificará al arrendatario que su solicitud fue rechazada.
+            No podrá deshacerse.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel-modal" (click)="cancelReject()" [disabled]="rejecting">
+                Cancelar
+            </button>
+            <button class="btn-confirm-reject" (click)="confirmReject()" [disabled]="rejecting">
+                <i class='bx bx-x'></i>
+                {{ rejecting ? 'Rechazando...' : 'Sí, rechazar' }}
+            </button>
+        </div>
+    </div>
+</div>

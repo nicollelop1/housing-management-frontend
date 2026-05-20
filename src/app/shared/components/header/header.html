@@ -1,1 +1,140 @@
-<p>header works!</p>
+<header class="header">
+
+  <div class="left">
+    <img class="logo" src="/assets/img/VoltrixHouse_Icon.png" />
+    <span class="name">Voltrix House</span>
+  </div>
+
+  <nav class="nav">
+
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <i class='bx bx-home'></i> Inicio
+    </a>
+
+
+    <a routerLink="/my-properties" routerLinkActive="active">
+      <i class='bx bx-building-house'></i> Mis propiedades
+    </a>
+
+    <a routerLink="/contracts" routerLinkActive="active">
+      <i class='bx bx-file'></i> Contratos
+    </a>
+
+    <a routerLink="/rental-requests/owner" routerLinkActive="active">
+      <i class='bx bx-transfer'></i> Solicitudes
+    </a>
+
+  </nav>
+
+  <div class="right">
+
+
+    <div class="notif-btn" (click)="toggleNotifications()">
+      <i class='bx bx-bell'></i>
+      <span class="notif-badge" *ngIf="isLoggedIn && unreadCount > 0">
+        {{ unreadCount > 99 ? '99+' : unreadCount }}
+      </span>
+    </div>
+
+    <div class="user" (click)="toggleMenu()">
+      <ng-container *ngIf="currentUser$ | async as user; else guestIcon">
+        <div class="avatar">{{ user.primerNombre.charAt(0).toUpperCase() }}</div>
+      </ng-container>
+      <ng-template #guestIcon>
+        <i class='bx bx-user-circle'></i>
+      </ng-template>
+    </div>
+
+    <div class="dropdown notif-dropdown" *ngIf="notificationsOpen">
+
+      <div class="notif-header">
+        <span class="notif-title">
+          <i class='bx bx-bell'></i> Notificaciones
+        </span>
+
+        <span class="notif-count" *ngIf="unreadInDropdownCount > 0">
+          {{ unreadInDropdownCount }} sin leer
+        </span>
+      </div>
+
+      <div class="notif-loading" *ngIf="loadingNotifs">
+        <div class="spinner-sm"></div> Cargando...
+      </div>
+
+      <div class="notif-list" *ngIf="!loadingNotifs">
+
+        <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read"
+          (click)="onNotificationClick(n)">
+          <div class="notif-item-icon" [ngClass]="'notif-icon-' + n.type.toLowerCase()">
+            <i class='bx' [ngClass]="'bx-' + notifIcon(n.type)"></i>
+          </div>
+
+          <div class="notif-item-body">
+            <p class="notif-item-title">{{ n.title }}</p>
+            <p class="notif-item-msg">{{ n.message }}</p>
+            <span class="notif-item-time">{{ timeAgo(n.createdAt) }}</span>
+          </div>
+
+          <div class="notif-dot" *ngIf="!n.read"></div>
+        </div>
+
+        <p class="empty" *ngIf="notifications.length === 0">
+          <i class='bx bx-check-circle'></i>
+          Sin notificaciones nuevas
+        </p>
+
+      </div>
+
+      <div class="notif-footer">
+        <a routerLink="/notifications" (click)="notificationsOpen = false">
+          Ver todas las notificaciones →
+        </a>
+      </div>
+
+    </div>
+
+    <div class="dropdown user-dropdown" *ngIf="menuOpen">
+
+      <ng-container *ngIf="isLoggedIn; else guestMenu">
+
+        <a routerLink="/profile/view" (click)="menuOpen = false">
+          <i class='bx bx-user'></i>
+          Ver perfil
+        </a>
+
+        <a routerLink="/favorites" (click)="menuOpen = false">
+          <i class='bx bx-heart'></i>
+          Favoritos
+        </a>
+
+        <a routerLink="/contracts" (click)="menuOpen = false">
+          <i class='bx bx-credit-card'></i>
+          Pagos
+        </a>
+
+        <button class="logout-btn" (click)="logout()">
+          <i class='bx bx-log-out'></i>
+          Cerrar sesión
+        </button>
+
+      </ng-container>
+
+      <ng-template #guestMenu>
+
+        <a routerLink="/login" (click)="menuOpen = false">
+          <i class='bx bx-log-in'></i>
+          Iniciar sesión
+        </a>
+
+        <a routerLink="/register" (click)="menuOpen = false">
+          <i class='bx bx-user-plus'></i>
+          Registrarse
+        </a>
+
+      </ng-template>
+
+    </div>
+
+  </div>
+
+</header>

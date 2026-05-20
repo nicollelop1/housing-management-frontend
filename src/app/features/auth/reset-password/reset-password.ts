@@ -1,79 +1,65 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { Router, RouterLink } from '@angular/router';
-import { NgIf, isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
+import { Location, NgIf } from '@angular/common';
 import { CustomValidators } from '../../../shared/components/validators/custom-validators';
+import { ToastService } from '../../../shared/services/toast';
+import { AuthErrors, getHttpErrorMessage } from '../../../core/utils/http-error-handler';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIf, RouterLink],
+  imports: [ReactiveFormsModule, NgIf],
   templateUrl: './reset-password.html',
   styleUrls: ['./reset-password.css'],
 })
-export class ResetPassword implements OnInit {
+export class ResetPassword {
 
-  form: FormGroup;
-  errorMessage = '';
-  successMessage = '';
+  private toast    = inject(ToastService);
+  private fb       = inject(FormBuilder);
+  private auth     = inject(AuthService);
+  private router   = inject(Router);
+  private location = inject(Location);
 
-  email: string = '';
-  code: string = '';
+  form: FormGroup = this.fb.group({
+    password: ['', [Validators.required, CustomValidators.strongPassword]]
+  });
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    this.form = this.fb.group(
-      {
-        newPassword: ['', [Validators.required, CustomValidators.strongPassword]],
-        confirmPassword: ['', [Validators.required]]
-      },
-      { validators: CustomValidators.passwordsMatch }
-    );
-  }
+  loading = false;
 
-  ngOnInit() {
-    this.email = this.authService.recoveryData.email;
-    this.code = this.authService.recoveryData.code;
+  get password() { return this.form.get('password')!; }
 
-    if (!this.email || !this.code) {
-      this.router.navigate(['/forgot-password']);
-    }
-  }
-  
-  get newPassword() { return this.form.get('newPassword')!; }
-  get confirmPassword() { return this.form.get('confirmPassword')!; }
+  get hasMinLength(): boolean { return (this.password.value?.length ?? 0) >= 8; }
+  get hasUpperCase(): boolean { return /[A-Z]/.test(this.password.value ?? ''); }
+  get hasNumber():    boolean { return /[0-9]/.test(this.password.value ?? ''); }
+  get hasSymbol():    boolean { return /[@$!%*?&]/.test(this.password.value ?? ''); }
 
-  get hasMinLength(): boolean { return (this.newPassword.value?.length ?? 0) >= 8; }
-  get hasUpperCase(): boolean { return /[A-Z]/.test(this.newPassword.value ?? ''); }
-  get hasNumber(): boolean { return /[0-9]/.test(this.newPassword.value ?? ''); }
-  get hasSymbol(): boolean { return /[@$!%*?&]/.test(this.newPassword.value ?? ''); }
+  goBack() { this.location.back(); }
 
   onSubmit() {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    this.errorMessage = '';
+    this.loading = true;
 
-    this.authService.resetPassword({
-      email: this.email,
-      code: this.code,
-      newPassword: this.newPassword.value
-    }).subscribe({
+    const payload = {
+      email: this.auth.recoveryData.email,
+      code:  this.auth.recoveryData.code,
+      newPassword: this.password.value
+    };
+
+    this.auth.resetPassword(payload).subscribe({
       next: () => {
-        this.authService.recoveryData = { email: '', code: '' };
-        this.successMessage = 'Contraseña actualizada correctamente';
-        setTimeout(() => this.router.navigate(['/login']), 2000);
+        this.toast.success('Contraseña actualizada. Ya puedes iniciar sesión.');
+        this.router.navigate(['/login']);
       },
-      error: () => {
-        this.errorMessage = 'Error al restablecer la contraseña. El código pudo expirar.';
+      error: (err) => {
+        this.loading = false;
+        this.toast.error(
+          err.status === 400 ? AuthErrors.RESET_400 : getHttpErrorMessage(err)
+        );
       }
     });
-
-    
   }
 }

@@ -10,6 +10,7 @@
     inset: 0;
     background: rgba(167, 167, 167, 0.65);
     backdrop-filter: blur(3px);
+    z-index: 20;
 }
 
 .form-panel h2 {
@@ -32,6 +33,7 @@
 }
 
 .register-box {
+    z-index: 21;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -174,9 +176,10 @@
 }
 
 .input-field[type="number"] {
-    appearance: textfield;       
-    -moz-appearance: textfield;  
+    appearance: textfield;
+    -moz-appearance: textfield;
 }
+
 .input-box label {
     position: absolute;
     left: 30px;
@@ -264,7 +267,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px; 
+    gap: 6px;
 
     transition: background 0.3s ease;
 }
@@ -277,7 +280,7 @@
 .btn-icon {
     font-size: 14px;
     color: #fff;
-     transform: translateY(1px);
+    transform: translateY(1px);
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -299,4 +302,100 @@
 
 .register-text a:hover {
     text-decoration: underline;
+}
+
+.overlay {
+    z-index: 200;
+}
+
+.register-box {
+    z-index: 201;
+}
+
+@media (max-width: 768px) {
+
+    .register-box {
+        width: 95%;
+        height: auto;
+        max-height: 92vh;
+
+        flex-direction: column;
+        border-radius: 18px;
+
+        overflow-y: auto;
+    }
+
+    .side-panel {
+        width: 100%;
+        min-width: 100%;
+        height: 140px;
+
+        padding: 20px;
+    }
+
+    .circle-lg {
+        width: 160px;
+        height: 160px;
+
+        top: -70px;
+        left: -50px;
+    }
+
+    .circle-sm {
+        width: 110px;
+        height: 110px;
+
+        bottom: -40px;
+        left: -20px;
+    }
+
+    .side-content h3 {
+        font-size: 18px;
+    }
+
+    .side-content p {
+        font-size: 11px;
+    }
+
+    .form-panel {
+        padding: 22px 18px 20px;
+        overflow-y: auto;
+    }
+
+    .form-panel h2 {
+        font-size: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .input-box {
+        margin-bottom: 14px;
+    }
+
+    .input-field {
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .input-box label {
+        font-size: 12px;
+    }
+
+    .btn-submit {
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .password-requirements {
+        margin-top: -4px;
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
 }

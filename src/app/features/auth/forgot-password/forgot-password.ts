@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { Location, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { CustomValidators } from '../../../shared/components/validators/custom-validators';
+import { ToastService } from '../../../shared/services/toast';
+import { AuthErrors, getHttpErrorMessage } from '../../../core/utils/http-error-handler';
 
 @Component({
   selector: 'app-forgot-password',
@@ -14,40 +16,35 @@ import { CustomValidators } from '../../../shared/components/validators/custom-v
 })
 export class ForgotPassword {
 
-  form: FormGroup;
-  errorMessage = '';
+  private toast  = inject(ToastService);
+  private fb     = inject(FormBuilder);
+  private auth   = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private location: Location
-  ) {
-    this.form = this.fb.group({
-      email: ['', [Validators.required, CustomValidators.email]]
-    });
-  }
+  form: FormGroup = this.fb.group({
+    email: ['', [Validators.required, CustomValidators.email]]
+  });
 
   get email() { return this.form.get('email')!; }
 
-  goBack() {
-    this.location.back();
+  goBack() { 
+    this.router.navigate(['/login']); 
   }
 
   onSubmit() {
     this.form.markAllAsTouched();
-
     if (this.form.invalid) return;
 
-    this.errorMessage = '';
-
-    this.authService.forgotPassword(this.email.value).subscribe({
+    this.auth.forgotPassword({ email: this.email.value }).subscribe({
       next: () => {
-        this.authService.recoveryData.email = this.email.value;
+        this.auth.recoveryData.email = this.email.value;
+        this.toast.info('Código enviado a tu correo.');
         this.router.navigate(['/verify-code']);
       },
-      error: () => {
-        this.errorMessage = 'Error enviando correo';
+      error: (err) => {
+        this.toast.error(
+          err.status === 404 ? AuthErrors.FORGOT_404 : getHttpErrorMessage(err)
+        );
       }
     });
   }

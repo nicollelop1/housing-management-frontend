@@ -1,0 +1,120 @@
+<div class="profile-page">
+
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        Cargando perfil...
+    </div>
+
+    <ng-container *ngIf="!loading && profile">
+
+        <div class="profile-header">
+            <h1><i class='bx bx-user-circle'></i> Mi perfil</h1>
+            <p>Tu información personal registrada en la plataforma.</p>
+        </div>
+
+        <div class="profile-layout">
+
+            <aside class="profile-sidebar">
+                <div class="avatar-card">
+
+                    <div class="avatar-wrap">
+                        <img [src]="avatarUrl" [alt]="fullName" class="avatar-img"
+                            (error)="$any($event.target).src = 'https://ui-avatars.com/api/?background=0b254d&color=fff&size=200&bold=true&name=U'">
+                    </div>
+
+                    <h2 class="sidebar-name">{{ fullName }}</h2>
+                    <p class="sidebar-email">{{ profile.email }}</p>
+
+                    <div class="sidebar-tags">
+                        <span class="tag tag-active" *ngIf="profile.active">
+                            <i class='bx bx-check-circle'></i> Cuenta activa
+                        </span>
+                    </div>
+
+                    <button class="btn-edit-avatar" (click)="goToEdit()">
+                        <i class='bx bx-edit-alt'></i>
+                        Editar perfil
+                    </button>
+
+                </div>
+            </aside>
+
+            <main class="profile-content">
+
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class='bx bx-id-card'></i>
+                        Información personal
+                    </h3>
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Primer nombre</span>
+                            <span class="info-value">{{ profile.primerNombre }}</span>
+                        </div>
+
+                        <div class="info-item" *ngIf="profile.segundoNombre">
+                            <span class="info-label">Segundo nombre</span>
+                            <span class="info-value">{{ profile.segundoNombre }}</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Primer apellido</span>
+                            <span class="info-value">{{ profile.primerApellido }}</span>
+                        </div>
+
+                        <div class="info-item" *ngIf="profile.segundoApellido">
+                            <span class="info-label">Segundo apellido</span>
+                            <span class="info-value">{{ profile.segundoApellido }}</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Edad</span>
+                            <span class="info-value">{{ profile.edad }} años</span>
+                        </div>
+
+                        <div class="info-item" *ngIf="profile.cedula">
+                            <span class="info-label">Cédula</span>
+                            <span class="info-value">{{ profile.cedula }}</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class='bx bx-phone'></i>
+                        Contacto
+                    </h3>
+
+                    <div class="info-grid">
+
+                        <div class="info-item col-full">
+                            <span class="info-label">Correo electrónico</span>
+                            <span class="info-value">{{ profile.email }}</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Teléfono</span>
+                            <span class="info-value" *ngIf="profile.phoneNumber">{{ profile.phoneNumber }}</span>
+                            <span class="info-value empty" *ngIf="!profile.phoneNumber">No registrado</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+
+    </ng-container>
+
+    <div *ngIf="!loading && !profile" class="empty-state">
+        <i class='bx bx-error-circle'></i>
+        <h3>No se pudo cargar el perfil</h3>
+        <p>Intenta recargar la página.</p>
+        <button class="btn-retry" (click)="loadProfile()">Reintentar</button>
+    </div>
+
+</div>

@@ -1,0 +1,14 @@
+.app-layout {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+}
+
+.header-behind {
+  z-index: 0 !important;
+}

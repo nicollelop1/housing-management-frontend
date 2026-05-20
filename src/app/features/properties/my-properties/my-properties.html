@@ -1,0 +1,110 @@
+<div class="my-props-page" (click)="closeMenu()">
+
+    <div class="page-header">
+        <div class="header-left">
+            <h1>Mis propiedades añadidas</h1>
+            <span class="count" *ngIf="!loading">{{ properties.length }} propiedad(es)</span>
+        </div>
+        <a routerLink="/create-property" class="btn-add">
+            <i class='bx bx-plus'></i> Nueva propiedad
+        </a>
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div> Cargando propiedades...
+    </div>
+
+    <div *ngIf="!loading && properties.length === 0" class="empty-state">
+        <i class='bx bx-buildings'></i>
+        <h3>No tienes propiedades aún</h3>
+        <p>Crea tu primera propiedad para empezar.</p>
+
+    </div>
+
+    <div class="prop-list" *ngIf="!loading && properties.length > 0">
+        <div class="prop-row" *ngFor="let p of properties">
+
+            <div class="prop-img">
+                <img [src]="getMainImage(p)" [alt]="p.title" (error)="onImageError($event)">
+            </div>
+
+            <div class="prop-info">
+                <div class="prop-top">
+                    <span class="prop-title">{{ p.title }}</span>
+                    <span class="prop-status" [ngClass]="statusClass(p.status)">
+
+                        <i class='bx' [ngClass]="statusIcon(p.status)"></i>
+
+                        {{ formatStatus(p.status) }}
+
+                    </span>
+                </div>
+                <div class="prop-sub">
+
+                    <span *ngIf="p.transactionType === 'RENT'">
+                        <i class='bx bx-home'></i> Arriendo
+                    </span>
+
+                    <span *ngIf="p.transactionType === 'SALE'">
+                        <i class='bx bx-dollar'></i> Venta
+                    </span>
+
+                </div>
+                <div class="prop-price">
+                    {{ p.priceAmount | currency:'COP':'symbol':'1.0-0' }}
+                    <span class="price-freq" *ngIf="p.transactionType === 'RENT'">/mes</span>
+                </div>
+            </div>
+
+            <div class="prop-actions">
+
+                <button class="btn-publish" [disabled]="p.status === 'PUBLISHED'" [ngClass]="{
+    'btn-published': p.status === 'PUBLISHED'
+  }" (click)="p.status !== 'PUBLISHED' && publishProperty(p.id, $event)">
+
+                    <i class='bx' [ngClass]="p.status === 'PUBLISHED'
+      ? 'bx-check-circle'
+      : 'bx-upload'"></i>
+
+                    {{ p.status === 'PUBLISHED' ? 'Publicada' : 'Publicar' }}
+
+                </button>
+                <button class="btn-delete" [disabled]="!canDelete(p)"
+                    [title]="canDelete(p) ? 'Eliminar' : 'No se puede eliminar (propiedad arrendada/vendida)'"
+                    (click)="askDelete(p.id, $event)">
+                    <i class='bx bx-trash'></i>
+                </button>
+
+                <div class="menu-wrap">
+                    <button class="btn-menu" (click)="toggleMenu(p.id, $event)">
+                        <i class='bx bx-dots-vertical-rounded'></i>
+                    </button>
+                    <div class="dropdown" *ngIf="openMenuId === p.id">
+                        <button (click)="goToDetail(p.id)">
+                            <i class='bx bx-show'></i> Ver detalles
+                        </button>
+                        <button (click)="goToEdit(p.id)">
+                            <i class='bx bx-edit'></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" *ngIf="confirmDeleteId" (click)="cancelDelete()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+            <i class='bx bx-error-circle modal-icon'></i>
+            <h3>¿Eliminar propiedad?</h3>
+            <p>Esta acción no se puede deshacer. La propiedad pasará a estado eliminado.</p>
+            <div class="modal-actions">
+                <button class="btn-cancel-modal" (click)="cancelDelete()" [disabled]="deleting">Cancelar</button>
+                <button class="btn-confirm-delete" (click)="confirmDelete()" [disabled]="deleting">
+                    {{ deleting ? 'Eliminando...' : 'Sí, eliminar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

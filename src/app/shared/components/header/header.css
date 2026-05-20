@@ -1,0 +1,565 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  padding: 0 120px;
+  background: #0b254d;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 28px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e6eaf0;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav a i {
+  font-size: 15px;
+}
+
+.nav a:hover {
+  background: rgba(255, 255, 255, .12);
+  color: white;
+}
+
+.nav a.active {
+  background: rgba(255, 255, 255, .18);
+  color: white;
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  margin-left: auto;
+}
+
+.notif-btn {
+  position: relative;
+  font-size: 22px;
+  cursor: pointer;
+  color: #e6eaf0;
+  display: flex;
+  align-items: center;
+  transition: color .2s;
+}
+
+.notif-btn:hover {
+  color: white;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #0b254d;
+  line-height: 1;
+  animation: popIn .25s ease;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.user {
+  font-size: 24px;
+  cursor: pointer;
+  color: #e6eaf0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: white;
+  color: #0b254d;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.avatar:hover {
+  transform: scale(1.08);
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 52px;
+  background: white;
+  color: #1a2a44;
+  border-radius: 16px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .18);
+  z-index: 1001;
+  animation: fadeDown .2s ease;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown a,
+.dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #1a2a44;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  transition: background .15s;
+}
+
+.dropdown a:hover,
+.dropdown button:hover {
+  background: #f4f7fb;
+}
+
+.dropdown i {
+  font-size: 16px;
+  color: #4a5568;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 6px 10px;
+}
+
+.user-fullname {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b254d;
+}
+
+.user-email {
+  font-size: 11px;
+  color: #8a97a8;
+}
+
+.guest-msg {
+  font-size: 12px;
+  color: #5f6b7a;
+  padding: 4px 6px 8px;
+  line-height: 1.5;
+}
+
+.divider {
+  height: 1px;
+  background: #eef0f4;
+  margin: 4px 0;
+}
+
+.logout-btn {
+  color: #e53935 !important;
+}
+
+.logout-btn:hover {
+  background: #fff5f5 !important;
+}
+
+.logout-btn i {
+  color: #e53935 !important;
+}
+
+.notif-dropdown {
+  right: 46px;
+  width: 320px;
+
+  max-height: 380px;
+
+  background: white;
+  padding: 0;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-list {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 240px;
+}
+
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-title i {
+  color: #0b254d;
+  font-size: 16px;
+}
+
+.notif-count {
+  font-size: 11px;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.notif-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #0b254d;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: background .15s;
+  position: relative;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.notif-item:hover {
+  background: #f8fafc;
+}
+
+.notif-item.unread {
+  background: #f0f7ff;
+}
+
+.notif-item.unread:hover {
+  background: #e6f0fd;
+}
+
+.notif-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.notif-icon-rental_request {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.notif-icon-contract {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.notif-icon-payment {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notif-icon-system {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.notif-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-item-msg {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-item-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 3px;
+  display: block;
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.empty {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty i {
+  font-size: 28px;
+  color: #cbd5e1;
+}
+
+.notif-footer {
+  padding: 10px 14px;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.notif-footer a {
+  font-size: 12px;
+  color: #0b254d;
+  font-weight: 600;
+  text-decoration: none;
+  display: block;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+
+.notif-footer a:hover {
+  background: #f1f5f9;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 220px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  overflow: hidden;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-dropdown a,
+.user-dropdown button {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: none;
+  text-decoration: none;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background: #f5f7fb;
+}
+
+.logout-btn {
+  border-top: 1px solid #eee !important;
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: 70px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .name {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .nav {
+    margin-left: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav a {
+    font-size: 11px;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+
+  .right {
+    gap: 10px;
+    margin-left: 6px;
+  }
+
+  .notif-btn {
+    font-size: 20px;
+  }
+
+  .user {
+    font-size: 22px;
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .dropdown {
+    right: 0;
+    top: 50px;
+    width: 230px;
+    min-width: unset;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .notif-dropdown {
+    right: 10px;
+    width: 290px;
+    max-height: 340px;
+  }
+
+  .dropdown a,
+  .dropdown button {
+    font-size: 12px;
+    padding: 8px;
+  }
+}

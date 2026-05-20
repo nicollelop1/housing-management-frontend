@@ -1,0 +1,351 @@
+.or-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.header-left h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-left h1 i { color: #0b254d; font-size: 24px; }
+
+.subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: .2s;
+  white-space: nowrap;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-refresh:disabled { opacity: .6; cursor: not-allowed; }
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: white;
+  color: #475569;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.filter-btn:hover { background: #f1f5f9; }
+
+.filter-btn.active {
+  background: #0b254d;
+  color: white;
+  border-color: #0b254d;
+}
+
+.badge {
+  background: rgba(0,0,0,.1);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.filter-btn.active .badge {
+  background: rgba(255,255,255,.25);
+  color: white;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 14px;
+  padding: 40px 0;
+  justify-content: center;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #0b254d;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-state i {
+  font-size: 56px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.empty-state h3 {
+  font-size: 17px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.empty-state p { font-size: 14px; }
+
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.request-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+
+.request-card:hover {
+  box-shadow: 0 4px 18px rgba(0,0,0,.1);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.status-pending   { background: #fef9c3; color: #a16207; }
+.status-accepted  { background: #dcfce7; color: #16a34a; }
+.status-rejected  { background: #fee2e2; color: #dc2626; }
+.status-cancelled { background: #f1f5f9; color: #64748b; }
+
+.card-date {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-body {
+  padding: 18px 20px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px 24px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.info-value.highlight {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.info-value.link {
+  color: #0b254d;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.info-value.link:hover { text-decoration: underline; }
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-accept,
+.btn-reject {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.btn-accept {
+  background: #0b254d;
+  color: white;
+}
+
+.btn-accept:hover:not(:disabled) { background: #0d3d84; }
+.btn-accept:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-reject:hover:not(:disabled) { background: #fecaca; }
+.btn-reject:disabled { opacity: .6; cursor: not-allowed; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 20px;
+  padding: 36px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 52px;
+  color: #f59e0b;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.modal-box h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
+.modal-box p  { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+
+.modal-actions { display: flex; gap: 12px; justify-content: center; }
+
+.btn-cancel-modal {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: .2s;
+}
+
+.btn-cancel-modal:hover:not(:disabled) { background: #f8fafc; }
+.btn-cancel-modal:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-confirm-reject {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.btn-confirm-reject:hover:not(:disabled) { background: #b91c1c; }
+.btn-confirm-reject:disabled { opacity: .6; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .or-page { padding: 24px 16px 60px; }
+
+  .page-header { flex-direction: column; }
+
+  .info-grid { grid-template-columns: 1fr 1fr; }
+
+  .card-actions { flex-wrap: wrap; }
+
+  .btn-accept, .btn-reject { flex: 1; justify-content: center; }
+}

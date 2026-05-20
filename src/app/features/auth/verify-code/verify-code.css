@@ -9,13 +9,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 20;
 }
 
 .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
+    background: rgba(167, 167, 167, 0.65);
+    backdrop-filter: blur(3px);
 }
 
 .verify-box {

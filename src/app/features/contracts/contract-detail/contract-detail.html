@@ -1,0 +1,190 @@
+<div class="cd-page">
+
+    <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        Cargando contrato...
+    </div>
+
+    <ng-container *ngIf="!loading && contract">
+
+        <div class="page-header">
+            <div class="header-left">
+                <button class="btn-back" routerLink="/contracts">
+                    <i class='bx bx-arrow-back'></i> Volver
+                </button>
+                <h1><i class='bx bx-file-blank'></i> Detalle del contrato</h1>
+                <p class="subtitle">Creado el {{ formatDate(contract.createdAt) }}</p>
+            </div>
+
+            <span class="status-badge" [ngClass]="statusClass(contract.status)">
+                <i class='bx'
+                    [class.bx-check-circle]="contract.status === 'ACTIVE'"
+                    [class.bx-x-circle]="contract.status === 'CANCELLED'"
+                    [class.bx-flag]="contract.status === 'TERMINATED'"
+                    [class.bx-time]="contract.status === 'EXPIRED'"></i>
+                {{ formatStatus(contract.status) }}
+            </span>
+        </div>
+
+        <div class="cd-grid">
+
+            <div class="cd-card">
+                <h2 class="card-title"><i class='bx bx-home'></i> Propiedad</h2>
+                <div class="info-list">
+                    <div class="info-row">
+                        <span class="info-label">Nombre</span>
+                        <a class="info-value link"
+                            [routerLink]="['/properties-detail', contract.propertyId]">
+                            {{ contract.propertyTitle }}
+                        </a>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">ID de propiedad</span>
+                        <span class="info-value mono">{{ contract.propertyId }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cd-card">
+                <h2 class="card-title"><i class='bx bx-group'></i> Partes involucradas</h2>
+                <div class="info-list">
+                    <div class="info-row">
+                        <span class="info-label">Propietario</span>
+                        <span class="info-value">
+                            {{ contract.ownerName }}
+                            <span class="you-tag" *ngIf="isOwner">(tú)</span>
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Arrendatario</span>
+                        <span class="info-value">
+                            {{ contract.tenantName }}
+                            <span class="you-tag" *ngIf="isTenant">(tú)</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cd-card">
+                <h2 class="card-title"><i class='bx bx-calendar'></i> Período del contrato</h2>
+                <div class="info-list">
+                    <div class="info-row">
+                        <span class="info-label">Fecha de inicio</span>
+                        <span class="info-value">{{ formatDate(contract.startDate) }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Fecha de fin</span>
+                        <span class="info-value">{{ formatDate(contract.endDate) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cd-card">
+                <h2 class="card-title"><i class='bx bx-money'></i> Condiciones de pago</h2>
+                <div class="info-list">
+                    <div class="info-row">
+                        <span class="info-label">Valor mensual</span>
+                        <span class="info-value highlight">{{ formatCurrency(contract.monthlyRent) }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Frecuencia</span>
+                        <span class="info-value">{{ formatFrequency(contract.paymentFrequency) }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="cd-actions">
+
+            <button class="btn-action btn-pdf" (click)="downloadPdf()" [disabled]="downloadingPdf">
+                <i class='bx' [class.bx-download]="!downloadingPdf"
+                    [class.bx-loader-circle]="downloadingPdf"
+                    [class.bx-spin]="downloadingPdf"></i>
+                {{ downloadingPdf ? 'Descargando...' : 'Descargar contrato PDF' }}
+            </button>
+
+            <button
+                *ngIf="isTenant && isActive"
+                class="btn-action btn-pay"
+                (click)="initiatePayment()"
+                [disabled]="initiatingPayment">
+                <i class='bx' [class.bx-credit-card]="!initiatingPayment"
+                    [class.bx-loader-circle]="initiatingPayment"
+                    [class.bx-spin]="initiatingPayment"></i>
+                {{ initiatingPayment ? 'Redirigiendo a Stripe...' : 'Pagar arriendo' }}
+            </button>
+
+            <button class="btn-action btn-receipt" (click)="downloadReceipt()" [disabled]="downloadingReceipt">
+                <i class='bx' [class.bx-receipt]="!downloadingReceipt"
+                    [class.bx-loader-circle]="downloadingReceipt"
+                    [class.bx-spin]="downloadingReceipt"></i>
+                {{ downloadingReceipt ? 'Descargando...' : 'Comprobante de pago' }}
+            </button>
+
+            <button
+                *ngIf="isActive"
+                class="btn-action btn-cancel"
+                (click)="openCancelModal()">
+                <i class='bx bx-x-circle'></i> Cancelar contrato
+            </button>
+
+            <button
+                *ngIf="isOwner && isActive"
+                class="btn-action btn-terminate"
+                (click)="openTerminateModal()">
+                <i class='bx bx-flag'></i> Terminar contrato
+            </button>
+
+        </div>
+
+    </ng-container>
+
+    <div class="empty-state" *ngIf="!loading && !contract">
+        <i class='bx bx-file-blank'></i>
+        <h3>Contrato no encontrado</h3>
+        <p>El contrato que buscas no existe o no tienes acceso.</p>
+        <a routerLink="/contracts" class="btn-back-link">Volver a mis contratos</a>
+    </div>
+
+</div>
+
+<div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <i class='bx bx-error-circle modal-icon warn'></i>
+        <h3>¿Cancelar contrato?</h3>
+        <p>
+            Esta acción cancelará el contrato activo. Tanto el propietario
+            como el arrendatario serán notificados.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-secondary" (click)="closeCancelModal()" [disabled]="cancelling">
+                Volver
+            </button>
+            <button class="btn-modal-danger" (click)="confirmCancel()" [disabled]="cancelling">
+                <i class='bx bx-x'></i>
+                {{ cancelling ? 'Cancelando...' : 'Sí, cancelar' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showTerminateModal" (click)="closeTerminateModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <i class='bx bx-flag modal-icon info'></i>
+        <h3>¿Terminar contrato?</h3>
+        <p>
+            Esto marcará el contrato como <strong>Terminado</strong>, indicando
+            que el período de arriendo llegó a su fin. Esta acción es definitiva.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-secondary" (click)="closeTerminateModal()" [disabled]="terminating">
+                Volver
+            </button>
+            <button class="btn-modal-primary" (click)="confirmTerminate()" [disabled]="terminating">
+                <i class='bx bx-flag'></i>
+                {{ terminating ? 'Procesando...' : 'Sí, terminar' }}
+            </button>
+        </div>
+    </div>
+</div>

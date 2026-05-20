@@ -1,0 +1,102 @@
+<div class="pr-page">
+
+  <div *ngIf="state === 'loading'" class="center-state">
+    <div class="spinner"></div>
+    <p>Verificando comprobante...</p>
+  </div>
+
+  <div *ngIf="state === 'error'" class="center-state">
+    <i class='bx bx-error-circle error-icon'></i>
+    <h3>Algo salió mal</h3>
+    <p>{{ errorMsg }}</p>
+    <button class="btn-secondary" (click)="goToContracts()">
+      <i class='bx bx-arrow-back'></i> Volver a contratos
+    </button>
+  </div>
+
+  <div *ngIf="state === 'ready'" class="receipt-wrapper">
+
+    <div class="success-card">
+
+      <div class="success-icon-wrap">
+        <div class="success-circle">
+          <i class='bx bx-check-circle'></i>
+        </div>
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+      </div>
+
+      <h1 class="success-title">¡Pago registrado!</h1>
+      <p class="success-subtitle">
+        Tu pago fue procesado exitosamente a través de Stripe.<br>
+        Puedes descargar el comprobante oficial en PDF a continuación.
+      </p>
+
+      <div class="contract-ref">
+        <span class="ref-label"><i class='bx bx-file'></i> Contrato</span>
+        <span class="ref-value">{{ contractId }}</span>
+      </div>
+
+    </div>
+
+    <div class="actions-card">
+
+      <h2 class="actions-title">
+        <i class='bx bx-download'></i> Comprobante de pago
+      </h2>
+
+      <p class="actions-desc">
+        El comprobante es un PDF oficial que incluye los datos del pago,
+        el contrato y las partes involucradas. Puedes guardarlo o imprimirlo.
+      </p>
+
+      <button
+        class="btn-download"
+        (click)="downloadReceipt()"
+        [disabled]="downloadingPdf"
+      >
+        <i
+          class='bx'
+          [class.bx-download]="!downloadingPdf"
+          [class.bx-loader-circle]="downloadingPdf"
+          [class.bx-spin]="downloadingPdf"
+        ></i>
+        {{ downloadingPdf ? 'Descargando...' : 'Descargar comprobante PDF' }}
+      </button>
+
+      <div class="downloaded-msg" *ngIf="receiptReady">
+        <i class='bx bx-check'></i>
+        Comprobante descargado — revisa tu carpeta de Descargas.
+      </div>
+
+      <div class="info-note">
+        <i class='bx bx-info-circle'></i>
+        <span>
+          El comprobante solo está disponible si el pago fue completado exitosamente.
+          Si ves un error al descargar, contacta al soporte.
+        </span>
+      </div>
+
+    </div>
+
+    <div class="nav-row">
+
+      <button class="btn-secondary" (click)="goToContract()">
+        <i class='bx bx-file-blank'></i> Ver contrato
+      </button>
+
+      <button class="btn-ghost" (click)="goToContracts()">
+        <i class='bx bx-list-ul'></i> Mis contratos
+      </button>
+
+    </div>
+
+    <div class="stripe-banner">
+      <i class='bx bx-shield-quarter'></i>
+      Pago procesado de forma segura con
+      <strong>Stripe</strong> — tu información financiera nunca pasa por nuestros servidores.
+    </div>
+
+  </div>
+
+</div>

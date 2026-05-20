@@ -1,1 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+
+  font-family: Arial, sans-serif;
+
+  background: #f5f7fb;
+}
+
+body {
+  position: relative;
+}
+
+:root {
+  --z-header:  100;
+  --z-overlay: 200;
+}
+
+.fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+}
+

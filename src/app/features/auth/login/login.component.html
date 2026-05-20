@@ -1,5 +1,5 @@
-<div class="login-wrapper">
-    <div class="overlay"></div>
+<div class="login-wrapper fullscreen-overlay">
+  <div class="overlay"></div>
 
     <div class="login-box">
         <i class="bx bx-arrow-back icon-back" (click)="goBack()"></i>
@@ -72,8 +72,6 @@
                 <span class="btn-text">{{ loading ? 'Ingresando...' : 'Ingresar' }}</span>
                 <i class="bx bx-arrow-from-left btn-icon"></i>
             </button>
-
-            <p *ngIf="errorMessage" class="error-text error-general">{{ errorMessage }}</p>
 
             <div class="register-text">
                 No tienes cuenta? <a routerLink="/register">Regístrate</a>

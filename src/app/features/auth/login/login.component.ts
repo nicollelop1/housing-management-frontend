@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { Location, NgIf } from '@angular/common';
 import { CustomValidators } from '../../../shared/components/validators/custom-validators';
+import { ToastService } from '../../../shared/services/toast';
+import { AuthErrors, getHttpErrorMessage } from '../../../core/utils/http-error-handler';
 
 @Component({
   selector: 'app-login',
@@ -14,50 +16,48 @@ import { CustomValidators } from '../../../shared/components/validators/custom-v
 })
 export class LoginComponent {
 
-  form: FormGroup;
+  private toast = inject(ToastService);
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private location = inject(Location);
+
+  form: FormGroup = this.fb.group({
+    email: ['', [Validators.required, CustomValidators.email]],
+    password: ['', [Validators.required, CustomValidators.strongPassword]]
+  });
+
   loading = false;
-  errorMessage = '';
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private location: Location
-  ) {
-    this.form = this.fb.group({
-      email:    ['', [Validators.required, CustomValidators.email]],
-      password: ['', [Validators.required, CustomValidators.strongPassword]]
-    });
-  }
-
-  get email()    { return this.form.get('email')!; }
+  get email() { return this.form.get('email')!; }
   get password() { return this.form.get('password')!; }
 
   get hasMinLength(): boolean { return (this.password.value?.length ?? 0) >= 8; }
   get hasUpperCase(): boolean { return /[A-Z]/.test(this.password.value ?? ''); }
-  get hasNumber():    boolean { return /[0-9]/.test(this.password.value ?? ''); }
-  get hasSymbol():    boolean { return /[@$!%*?&]/.test(this.password.value ?? ''); }
+  get hasNumber(): boolean { return /[0-9]/.test(this.password.value ?? ''); }
+  get hasSymbol(): boolean { return /[@$!%*?&]/.test(this.password.value ?? ''); }
 
-  goBack() {
-    this.location.back();
-  }
+  goBack(): void { this.location.back(); }
 
-  onSubmit() {
+  onSubmit(): void {
     this.form.markAllAsTouched();
-
     if (this.form.invalid) return;
 
-    this.errorMessage = '';
     this.loading = true;
 
-    this.authService.login(this.form.value).subscribe({
+    this.auth.login(this.form.value).subscribe({
       next: (response) => {
-        this.authService.setToken(response.token);
-        this.router.navigate(['/home']);
+        this.auth.handleLoginSuccess(response);
+        this.toast.success('¡Bienvenido de nuevo!');
+        this.router.navigate(['/home']).then(() => {
+        this.auth.loadProfile();
+        });
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.errorMessage = 'Credenciales incorrectas';
+        this.toast.error(
+          err.status === 401 ? AuthErrors.LOGIN_401 : getHttpErrorMessage(err)
+        );
       }
     });
   }

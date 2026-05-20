@@ -1,0 +1,161 @@
+<div class="property-page" *ngIf="property && !loading">
+
+  <div class="left">
+
+    <div class="image-container">
+
+      <button class="nav-btn left-btn" *ngIf="property.imageUrls.length > 1" (click)="prevImage()">
+
+        <i class='bx bx-chevron-left'></i>
+
+      </button>
+
+      <img class="main-image" [src]="selectedImage" [alt]="property.title">
+
+      <button class="nav-btn right-btn" *ngIf="property.imageUrls.length > 1" (click)="nextImage()">
+
+        <i class='bx bx-chevron-right'></i>
+
+      </button>
+
+    </div>
+
+    <div class="thumbs" *ngIf="property.imageUrls.length > 1">
+
+      <img *ngFor="let image of property.imageUrls" [src]="image" [class.active]="image === selectedImage"
+        (click)="changeImage(image)">
+
+    </div>
+
+  </div>
+
+  <div class="right">
+
+    <span class="badge">
+      {{ property.transactionType === 'RENT' ? 'Arriendo' : 'Venta' }}
+    </span>
+
+    <h1>{{ property.title }}</h1>
+
+    <div class="price">
+
+      {{ property.priceAmount | currency:'COP':'symbol':'1.0-0' }}
+
+      <span *ngIf="property.paymentFrequency">
+        {{ formatFrequency(property.paymentFrequency) }}
+      </span>
+
+    </div>
+
+    <p class="desc">
+      {{ property.description }}
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+
+        <strong>Tipo</strong>
+
+        <span>
+          {{ formatType(property.typeProperty) }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Estado</strong>
+
+        <span>
+          {{ formatStatus(property.status) }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Habitaciones</strong>
+
+        <span>
+          {{ property.numberOfBedrooms || '—' }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Baños</strong>
+
+        <span>
+          {{ property.numberOfBathrooms || '—' }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Área</strong>
+
+        <span>
+          {{
+          property.areaInSquareMeters
+          ? property.areaInSquareMeters + ' m²'
+          : '—'
+          }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Mascotas</strong>
+
+        <span>
+          {{ property.petsAllowed ? 'Permitidas' : 'No permitidas' }}
+        </span>
+
+      </div>
+
+      <div class="card">
+
+        <strong>Amoblado</strong>
+
+        <span>
+          {{ property.furnished ? 'Sí' : 'No' }}
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="address">
+
+      <h3>Ubicación</h3>
+
+      <p>{{ property.address.street }}</p>
+
+      <p>
+        {{ property.address.city }},
+        {{ property.address.state }}
+      </p>
+
+      <p>{{ property.address.country }}</p>
+
+      <p *ngIf="property.address.postalCode">
+        {{ property.address.postalCode }}
+      </p>
+
+    </div>
+
+
+    <button class="request-btn" (click)="requestRental()">
+      <i class='bx bx-send'></i>
+      Solicitar arriendo
+    </button>
+
+
+
+  </div>
+
+</div>
