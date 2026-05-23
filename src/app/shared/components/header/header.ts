@@ -25,10 +25,12 @@ import { Notification } from '../../../core/models/notification';
 })
 export class Header implements OnInit, OnDestroy {
   menuOpen = false;
+  requestsMenuOpen = false;
+  contractsMenuOpen = false;
   notificationsOpen = false;
   currentUser$;
 
-  unreadCount = 0; 
+  unreadCount = 0;
   unreadInDropdownCount = 0;
   notifications: Notification[] = [];
   loadingNotifs = false;
@@ -50,6 +52,22 @@ export class Header implements OnInit, OnDestroy {
     if (this.authService.isLoggedIn()) {
       this.fetchUnreadCount();
       this.startPolling();
+    }
+  }
+
+  toggleRequestsMenu(): void {
+    this.requestsMenuOpen = !this.requestsMenuOpen;
+    if (this.requestsMenuOpen) {
+      this.menuOpen = false;
+      this.notificationsOpen = false;
+    }
+  }
+  toggleContractsMenu(): void {
+    this.contractsMenuOpen = !this.contractsMenuOpen;
+    if (this.contractsMenuOpen) {
+      this.menuOpen = false;
+      this.notificationsOpen = false;
+      this.requestsMenuOpen = false;
     }
   }
 
@@ -98,8 +116,8 @@ export class Header implements OnInit, OnDestroy {
     this.notificationService.getUnreadCount().subscribe({
       next: (count) => {
         this.unreadCount = count;
-        this.unreadInDropdownCount = count; 
-        this.cdr.detectChanges(); 
+        this.unreadInDropdownCount = count;
+        this.cdr.detectChanges();
       },
       error: () => { }
     });
@@ -119,7 +137,7 @@ export class Header implements OnInit, OnDestroy {
         const finalList = [...sortByDate(unread), ...topRead];
 
         this.unreadInDropdownCount = unread.length;
-        this.unreadCount = unread.length; 
+        this.unreadCount = unread.length;
         this.notifications = finalList;
         this.loadingNotifs = false;
         this.cdr.detectChanges();
@@ -139,7 +157,7 @@ export class Header implements OnInit, OnDestroy {
       if (wasUnread) {
         this.unreadCount = Math.max(0, this.unreadCount - 1);
         this.unreadInDropdownCount = Math.max(0, this.unreadInDropdownCount - 1);
-        notif.read = true; 
+        notif.read = true;
         this.cdr.detectChanges();
       }
 
@@ -161,10 +179,26 @@ export class Header implements OnInit, OnDestroy {
     }
 
     setTimeout(() => {
-      if (notif.contractId) {
-        this.router.navigate(['/contracts', notif.contractId]);
-      } else if (notif.type === 'RENTAL_REQUEST') {
-        this.router.navigate(['/rental-requests/owner']);
+      switch (notif.type) {
+        case 'RENTAL_REQUEST':
+          this.router.navigate(['/received-requests']);
+          break;
+
+        case 'PAYMENT':
+          this.router.navigate(['/payments']);
+          break;
+
+        case 'CONTRACT':
+          if (notif.contractId) {
+            this.router.navigate(['/contracts', notif.contractId]);
+          } else {
+            this.router.navigate(['/contracts']);
+          }
+          break;
+
+        default:
+          this.router.navigate(['/dashboard']);
+          break;
       }
     }, 100);
   }
@@ -208,24 +242,39 @@ export class Header implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     this.pollInterval = setInterval(() => {
       this.fetchUnreadCount();
+
+      if (this.isLoggedIn) {
+        this.notificationService.getAll().subscribe({
+          next: (data) => {
+            const unread = data.filter(n => !n.read);
+            const read = data.filter(n => n.read);
+            const sortByDate = (arr: Notification[]) =>
+              arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            const topRead = sortByDate(read).slice(0, 10);
+            this.notifications = [...sortByDate(unread), ...topRead];
+            this.cdr.detectChanges();
+          }
+        });
+      }
     }, 30_000);
   }
-
   private stopPolling(): void {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
     }
   }
-
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const inHeader = target.closest('app-header');
-    if (!inHeader) {
-      this.menuOpen = false;
-      this.notificationsOpen = false;
+    if (!target.closest('.requests-nav-wrap')) {
+      this.requestsMenuOpen = false;
+      this.contractsMenuOpen = false;
     }
+    if (!target.closest('.user')) this.menuOpen = false;
+    if (!target.closest('.notif-btn') && !target.closest('.notif-dropdown'))
+      this.notificationsOpen = false;
   }
 
   notifIcon(type: Notification['type']): string {

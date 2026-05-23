@@ -1,0 +1,79 @@
+<div class="pay-hub-page">
+
+  <div class="pay-hub-header">
+    <div>
+      <h1><i class='bx bx-credit-card'></i> Mis pagos</h1>
+      <p>Consulta el historial de pagos de cada contrato</p>
+    </div>
+  </div>
+
+  <div class="pay-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando contratos...</p>
+  </div>
+
+  <div class="pay-empty" *ngIf="!loading && contracts.length === 0">
+    <i class='bx bx-receipt'></i>
+    <h3>Sin historial de pagos</h3>
+    <p>Cuando realices tu primer pago aparecerá aquí.</p>
+    <button class="btn-go-contracts" routerLink="/contracts">
+      <i class='bx bx-file'></i> Ver mis contratos
+    </button>
+  </div>
+
+  <div class="pay-grid" *ngIf="!loading && contracts.length > 0">
+
+    <div class="pay-card"
+         *ngFor="let c of contracts"
+         (click)="goToHistory(c)">
+
+      <div class="pay-card-top">
+        <div class="pay-card-title">
+          <i class='bx bx-home-alt'></i>
+          <span>{{ c.propertyTitle }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="statusClass(c.status)">
+          {{ formatStatus(c.status) }}
+        </span>
+      </div>
+
+      <div class="pay-card-info">
+        <div class="pay-info-row">
+          <span>Arrendatario</span>
+          <strong>{{ c.tenantName }}</strong>
+        </div>
+        <div class="pay-info-row">
+          <span>Propietario</span>
+          <strong>{{ c.ownerName }}</strong>
+        </div>
+        <div class="pay-info-row">
+          <span>Renta {{ formatFrequency(c.paymentFrequency) | lowercase }}</span>
+          <strong>{{ formatCurrency(c.periodRent) }}</strong>
+        </div>
+        <div class="pay-info-row">
+          <span>Período</span>
+          <strong>{{ formatDate(c.startDate) }} — {{ formatDate(c.endDate) }}</strong>
+        </div>
+      </div>
+
+      <div class="pay-card-footer">
+        <button class="btn-history" (click)="goToHistory(c); $event.stopPropagation()">
+          <i class='bx bx-history'></i> Ver historial
+        </button>
+
+        <button class="btn-last-receipt"
+                (click)="downloadLastReceipt(c, $event)"
+                [disabled]="downloadingId === getId(c)">
+          <i class='bx'
+             [class.bx-download]="downloadingId !== getId(c)"
+             [class.bx-loader-circle]="downloadingId === getId(c)"
+             [class.bx-spin]="downloadingId === getId(c)"></i>
+          {{ downloadingId === getId(c) ? 'Descargando...' : 'Último comprobante' }}
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

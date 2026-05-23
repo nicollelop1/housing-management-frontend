@@ -1,30 +1,29 @@
-<div class="property-page" *ngIf="property && !loading">
+<div class="loading-state" *ngIf="loading">
+  <div class="spinner"></div>
+  Cargando propiedad...
+</div>
+
+<div *ngIf="!loading && property" class="property-page">
 
   <div class="left">
 
     <div class="image-container">
-
-      <button class="nav-btn left-btn" *ngIf="property.imageUrls.length > 1" (click)="prevImage()">
-
+      <button class="nav-btn left-btn" *ngIf="property.imageUrls && property.imageUrls.length > 1"
+        (click)="prevImage()">
         <i class='bx bx-chevron-left'></i>
-
       </button>
 
-      <img class="main-image" [src]="selectedImage" [alt]="property.title">
+      <img class="main-image" [src]="selectedImage" [alt]="property.title" (error)="onImageError($event)">
 
-      <button class="nav-btn right-btn" *ngIf="property.imageUrls.length > 1" (click)="nextImage()">
-
+      <button class="nav-btn right-btn" *ngIf="property.imageUrls && property.imageUrls.length > 1"
+        (click)="nextImage()">
         <i class='bx bx-chevron-right'></i>
-
       </button>
-
     </div>
 
-    <div class="thumbs" *ngIf="property.imageUrls.length > 1">
-
+    <div class="thumbs" *ngIf="property.imageUrls && property.imageUrls.length > 1">
       <img *ngFor="let image of property.imageUrls" [src]="image" [class.active]="image === selectedImage"
-        (click)="changeImage(image)">
-
+        (click)="changeImage(image)" (error)="onImageError($event)">
     </div>
 
   </div>
@@ -38,13 +37,10 @@
     <h1>{{ property.title }}</h1>
 
     <div class="price">
-
       {{ property.priceAmount | currency:'COP':'symbol':'1.0-0' }}
-
-      <span *ngIf="property.paymentFrequency">
-        {{ formatFrequency(property.paymentFrequency) }}
+      <span *ngIf="property.transactionType === 'RENT' && property.paymentFrequency">
+        / {{ formatFrequency(property.paymentFrequency) }}
       </span>
-
     </div>
 
     <p class="desc">
@@ -52,110 +48,136 @@
     </p>
 
     <div class="grid">
-
       <div class="card">
-
         <strong>Tipo</strong>
-
-        <span>
-          {{ formatType(property.typeProperty) }}
-        </span>
-
+        <span>{{ formatType(property.typeProperty) }}</span>
       </div>
 
       <div class="card">
-
         <strong>Estado</strong>
-
-        <span>
-          {{ formatStatus(property.status) }}
-        </span>
-
+        <span>{{ formatStatus(property.status) }}</span>
       </div>
 
       <div class="card">
+        <strong>Frecuencia</strong>
+        <span>{{ formatFrequency(property.paymentFrequency) }}</span>
+      </div>
 
+      <div class="card">
         <strong>Habitaciones</strong>
-
-        <span>
-          {{ property.numberOfBedrooms || '—' }}
-        </span>
-
+        <span>{{ property.numberOfBedrooms || '—' }}</span>
       </div>
 
       <div class="card">
-
         <strong>Baños</strong>
-
-        <span>
-          {{ property.numberOfBathrooms || '—' }}
-        </span>
-
+        <span>{{ property.numberOfBathrooms || '—' }}</span>
       </div>
 
       <div class="card">
-
         <strong>Área</strong>
-
-        <span>
-          {{
-          property.areaInSquareMeters
-          ? property.areaInSquareMeters + ' m²'
-          : '—'
-          }}
-        </span>
-
+        <span>{{ property.areaInSquareMeters ? property.areaInSquareMeters + ' m²' : '—' }}</span>
       </div>
 
       <div class="card">
+        <strong>Fecha registro</strong>
+        <span>
+          {{ (property.createdAt || property.publishedAt)
+              ? ((property.createdAt || property.publishedAt) | date:'dd/MM/yyyy')
+              : '—' }}
+        </span>
+      </div>
 
+      <div class="card">
         <strong>Mascotas</strong>
-
-        <span>
-          {{ property.petsAllowed ? 'Permitidas' : 'No permitidas' }}
-        </span>
-
+        <span>{{ property.petsAllowed ? 'Permitidas' : 'No permitidas' }}</span>
       </div>
 
       <div class="card">
-
         <strong>Amoblado</strong>
+        <span>{{ property.furnished ? 'Sí' : 'No' }}</span>
+      </div>
+    </div>
 
-        <span>
-          {{ property.furnished ? 'Sí' : 'No' }}
-        </span>
+    <div class="address" *ngIf="property.address">
+      <h3>Ubicación</h3>
+      <p class="street"><i class='bx bx-navigation'></i> {{ property.address.street }}</p>
+      <p class="city-state">{{ property.address.city }}, {{ property.address.state }}</p>
+      <p class="country">{{ property.address.country }}
+        <span *ngIf="property.address.postalCode">({{ property.address.postalCode }})</span>
+      </p>
+
+      <div class="map-link-container" *ngIf="property.coordinates">
+        <a [href]="'https://www.google.com/maps/search/?api=1&query=' + property.coordinates.latitud + ',' + property.coordinates.longitud"
+          target="_blank" class="google-maps-btn">
+          <i class='bx bx-map-alt'></i> Ver ubicación en Google Maps
+        </a>
+      </div>
+    </div>
+
+    <div class="owner-card" *ngIf="property.owner">
+      <h3>Propietario</h3>
+      <p><strong>Nombre:</strong> {{ property.owner.fullName }}</p>
+      <p><strong>Email:</strong> {{ property.owner.email }}</p>
+      <p><strong>Teléfono:</strong> {{ property.owner.phoneNumber }}</p>
+    </div>
+
+    <div class="contact-section" *ngIf="!isOwner && property.transactionType === 'RENT'">
+      <div class="action-buttons">
+      
+        <button class="request-btn" (click)="openRequestPanel()">
+          <i class='bx bx-send'></i>
+          Solicitar arriendo
+        </button>
+      </div>
+    </div>
+
+    <div class="request-overlay" *ngIf="showRequestPanel" (click)="closeRequestPanel()">
+      <div class="request-panel" (click)="$event.stopPropagation()">
+
+        <div class="panel-header">
+          <h3>Solicitar arriendo</h3>
+          <button class="close-btn" (click)="closeRequestPanel()">
+            <i class='bx bx-x'></i>
+          </button>
+        </div>
+
+        <div class="panel-body">
+          <div class="field">
+            <label>Fecha de inicio</label>
+            <input type="date" [(ngModel)]="form.startDate" />
+          </div>
+
+          <div class="field">
+            <label>
+              Duración
+              <span>({{ property.paymentFrequency === 'WEEKLY' ? 'Semanas' : 'Meses' }})</span>
+            </label>
+            <div class="duration-row">
+              <input type="number" [(ngModel)]="form.duration" min="1"
+                [placeholder]="property.paymentFrequency === 'WEEKLY' ? 'Ej: 4' : 'Ej: 6'" />
+              <span class="duration-badge">
+                {{ property.paymentFrequency === 'WEEKLY' ? 'Semanas' : 'Meses' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Renta propuesta <span class="optional">(opcional)</span></label>
+            <input type="number" [(ngModel)]="form.proposedRent"
+              placeholder="Dejar vacío para usar precio publicado" min="0" />
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <button class="cancel-btn" (click)="closeRequestPanel()">Cancelar</button>
+          <button class="send-btn" (click)="submitRequest()" [disabled]="requesting">
+            <i class='bx bx-send'></i>
+            {{ requesting ? 'Enviando...' : 'Enviar solicitud' }}
+          </button>
+        </div>
 
       </div>
-
     </div>
-
-    <div class="address">
-
-      <h3>Ubicación</h3>
-
-      <p>{{ property.address.street }}</p>
-
-      <p>
-        {{ property.address.city }},
-        {{ property.address.state }}
-      </p>
-
-      <p>{{ property.address.country }}</p>
-
-      <p *ngIf="property.address.postalCode">
-        {{ property.address.postalCode }}
-      </p>
-
-    </div>
-
-
-    <button class="request-btn" (click)="requestRental()">
-      <i class='bx bx-send'></i>
-      Solicitar arriendo
-    </button>
-
-
 
   </div>
-
 </div>

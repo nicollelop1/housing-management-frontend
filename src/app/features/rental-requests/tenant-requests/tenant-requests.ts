@@ -25,10 +25,10 @@ export class TenantRequests implements OnInit {
   activeFilter: RentalRequestStatus | 'ALL' = 'ALL';
 
   filters: { key: RentalRequestStatus | 'ALL'; label: string }[] = [
-    { key: 'ALL',       label: 'Todas'      },
-    { key: 'PENDING',   label: 'Pendientes' },
-    { key: 'ACCEPTED',  label: 'Aceptadas'  },
-    { key: 'REJECTED',  label: 'Rechazadas' },
+    { key: 'ALL', label: 'Todas' },
+    { key: 'PENDING', label: 'Pendientes' },
+    { key: 'ACCEPTED', label: 'Aceptadas' },
+    { key: 'REJECTED', label: 'Rechazadas' },
     { key: 'CANCELLED', label: 'Canceladas' },
   ];
 
@@ -38,10 +38,12 @@ export class TenantRequests implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
-    afterNextRender(() => this.loadRequests());
   }
 
-  ngOnInit(): void {}
+
+  ngOnInit(): void {
+    this.loadRequests();
+  }
 
   loadRequests(): void {
     this.loading = true;
@@ -118,9 +120,9 @@ export class TenantRequests implements OnInit {
 
   formatStatus(status: RentalRequestStatus): string {
     const map: Record<RentalRequestStatus, string> = {
-      PENDING:   'Pendiente',
-      ACCEPTED:  'Aceptada',
-      REJECTED:  'Rechazada',
+      PENDING: 'Pendiente',
+      ACCEPTED: 'Aceptada',
+      REJECTED: 'Rechazada',
       CANCELLED: 'Cancelada',
     };
     return map[status] ?? status;
@@ -128,9 +130,9 @@ export class TenantRequests implements OnInit {
 
   statusClass(status: RentalRequestStatus): string {
     const map: Record<RentalRequestStatus, string> = {
-      PENDING:   'status-pending',
-      ACCEPTED:  'status-accepted',
-      REJECTED:  'status-rejected',
+      PENDING: 'status-pending',
+      ACCEPTED: 'status-accepted',
+      REJECTED: 'status-rejected',
       CANCELLED: 'status-cancelled',
     };
     return map[status] ?? '';
@@ -138,9 +140,9 @@ export class TenantRequests implements OnInit {
 
   statusIcon(status: RentalRequestStatus): string {
     const map: Record<RentalRequestStatus, string> = {
-      PENDING:   'bx-time',
-      ACCEPTED:  'bx-check-circle',
-      REJECTED:  'bx-x-circle',
+      PENDING: 'bx-time',
+      ACCEPTED: 'bx-check-circle',
+      REJECTED: 'bx-x-circle',
       CANCELLED: 'bx-minus-circle',
     };
     return map[status] ?? 'bx-circle';

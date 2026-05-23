@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PropertyService } from '../../core/services/property.service';
+import { ToastService } from '../../shared/services/toast';
 import { Property, PropertyFilters, PropertyType } from '../../core/models/property.model';
 
 @Component({
@@ -18,100 +19,77 @@ export class HomeComponent implements OnInit {
   loading = false;
   isSearching = false;
 
+  favoriteIds = new Set<string>();
+  togglingId: string | null = null; 
+
   filters: PropertyFilters = {
-    city: '',
-    minPrice: undefined,
-    maxPrice: undefined,
-    typeProperty: undefined,
-    bedrooms: undefined,
-    petsAllowed: undefined,
-    furnished: undefined
+    city: '', minPrice: undefined, maxPrice: undefined,
+    typeProperty: undefined, bedrooms: undefined,
+    petsAllowed: undefined, furnished: undefined
   };
 
   propertyTypes: PropertyType[] = ['APARTMENT', 'HOUSE', 'ROOM', 'STUDIO', 'OFFICE', 'LAND'];
 
   constructor(
     private propertyService: PropertyService,
+    private toast: ToastService,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     afterNextRender(() => {
-      setTimeout(() => this.loadProperties(), 300);
+      setTimeout(() => {
+        this.loadProperties();
+      }, 300);
     });
   }
 
   ngOnInit(): void { }
 
+  isFavorite(id: string): boolean {
+    return this.favoriteIds.has(id);
+  }
+
+  toggleFavorite(property: Property, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (this.togglingId === property.id) return;
+    this.togglingId = property.id;
+  }
+
   loadProperties(): void {
     this.loading = true;
     this.isSearching = false;
     this.cdr.detectChanges();
-
     this.propertyService.getAll(0, 20).subscribe({
-      next: (data) => {
-        this.properties = data.content || data;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error cargando propiedades:', err);
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
+      next: (data) => { this.properties = data.content || data; this.loading = false; this.cdr.detectChanges(); },
+      error: (err) => { console.error(err); this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
   searchProperties(): void {
     const hasFilters =
-      !!this.filters.city?.trim() ||
-      this.filters.typeProperty !== undefined ||
-      this.filters.bedrooms !== undefined ||
-      this.filters.minPrice !== undefined ||
-      this.filters.maxPrice !== undefined ||
-      this.filters.petsAllowed !== undefined ||
+      !!this.filters.city?.trim() || this.filters.typeProperty !== undefined ||
+      this.filters.bedrooms !== undefined || this.filters.minPrice !== undefined ||
+      this.filters.maxPrice !== undefined || this.filters.petsAllowed !== undefined ||
       this.filters.furnished !== undefined;
 
-    if (!hasFilters) {
-      this.loadProperties();
-      return;
-    }
+    if (!hasFilters) { this.loadProperties(); return; }
 
-    this.loading = true;
-    this.isSearching = true;
-    this.cdr.detectChanges();
-
+    this.loading = true; this.isSearching = true; this.cdr.detectChanges();
     this.propertyService.search(this.filters).subscribe({
-      next: (data) => {
-        this.properties = data.content || data;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
+      next: (data) => { this.properties = data.content || data; this.loading = false; this.cdr.detectChanges(); },
+      error: (err) => { console.error(err); this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
   clearFilters(): void {
-    this.filters = {
-      city: '',
-      minPrice: undefined,
-      maxPrice: undefined,
-      typeProperty: undefined,
-      bedrooms: undefined,
-      petsAllowed: undefined,
-      furnished: undefined
-    };
+    this.filters = { city: '', minPrice: undefined, maxPrice: undefined, typeProperty: undefined, bedrooms: undefined, petsAllowed: undefined, furnished: undefined };
     this.loadProperties();
   }
 
-  getMainImage(property: any): string {
-    if (!property.imageUrls?.length) {
-      return 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600';
-    }
-    return String(property.imageUrls[0]).trim();
+  getMainImage(property: Property): string {
+    return property.imageUrls?.[0] || 'assets/images/default-property.jpg';
   }
 
   onImageError(event: any): void {

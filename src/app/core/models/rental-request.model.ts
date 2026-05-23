@@ -1,25 +1,35 @@
 export type RentalRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
 
+export interface UserSummary {
+  id: number;
+  fullName: string;
+  email: string;
+}
+
 export interface RentalRequest {
-  requestId:    string;
-  propertyId:   { value: string } | string;   
-  tenantId:     number;
-  ownerId:      number;
-  proposedRent: number;
-  status:       RentalRequestStatus;
-  startDate:    string;
-  endDate:      string;
-  createdAt:    string;
-  respondedAt?: string;
+  requestId: string;
+  propertyId: { value: string };
+  tenant: UserSummary; 
+  owner: UserSummary;   
+  startDate: string;
+  endDate: string;
+  proposedRent: number | null;
+  status: RentalRequestStatus;
+  createdAt: string;
+  respondedAt: string | null;
+  message?: string;
+  nextStep?: string;
 }
 
 export interface CreateRentalRequestPayload {
-  propertyId:    string;
-  proposedRent?: number;
-  startDate:     string;
-  endDate:       string;
+  propertyId: string;
+  startDate: string;
+  duration: number;
+  proposedRent?: number | null;
+
 }
 
 export interface AcceptRequestResponse {
-  contractId: string;
+  id?: string;
+  contractId?: string;
 }

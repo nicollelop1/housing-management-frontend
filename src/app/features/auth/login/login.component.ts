@@ -40,25 +40,39 @@ export class LoginComponent {
   goBack(): void { this.location.back(); }
 
   onSubmit(): void {
+
     this.form.markAllAsTouched();
+
     if (this.form.invalid) return;
 
     this.loading = true;
 
     this.auth.login(this.form.value).subscribe({
+
       next: (response) => {
+
+        console.log('LOGIN OK:', response);
+
         this.auth.handleLoginSuccess(response);
+
         this.toast.success('¡Bienvenido de nuevo!');
-        this.router.navigate(['/home']).then(() => {
-        this.auth.loadProfile();
-        });
+
+        this.router.navigate(['/home']);
+
       },
+
       error: (err) => {
+
         this.loading = false;
+
         this.toast.error(
-          err.status === 401 ? AuthErrors.LOGIN_401 : getHttpErrorMessage(err)
+          err.status === 401
+            ? AuthErrors.LOGIN_401
+            : getHttpErrorMessage(err)
         );
       }
+
     });
+
   }
 }

@@ -20,8 +20,8 @@ export class EditProfile implements OnInit {
   form!: FormGroup;
   profile: ProfileResponse | null = null;
 
-  loading = true;  
-  saving = false;  
+  loading = true;
+  saving = false;
 
   avatarPreview: string | null = null;
   avatarFile: File | null = null;
@@ -86,14 +86,13 @@ export class EditProfile implements OnInit {
 
 
   get avatarUrl(): string {
-    if (this.avatarPreview) return this.avatarPreview;
-    if (this.profile?.profilePictureUrl) return this.profile.profilePictureUrl;
 
-    const firstName = this.profile?.primerNombre || '';
-    const lastName = this.profile?.primerApellido || '';
-    const nameInitials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    if (this.avatarPreview) {
+      return this.avatarPreview;
+    }
 
-    return `https://ui-avatars.com/api/?background=0b254d&color=fff&size=200&bold=true&name=${nameInitials || 'U'}&length=2`;
+    return this.profile?.profilePictureUrl ||
+      'https://ui-avatars.com/api/?name=L';
   }
 
 

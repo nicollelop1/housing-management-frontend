@@ -72,14 +72,14 @@
                         <span class="info-label">
                             <i class='bx bx-user'></i> Arrendatario ID
                         </span>
-                        <span class="info-value">#{{ req.tenantId }}</span>
+                        <span class="info-value">{{ req.tenant.fullName }}</span>
                     </div>
 
                     <div class="info-item">
                         <span class="info-label">
                             <i class='bx bx-money'></i> Renta propuesta
                         </span>
-                        <span class="info-value highlight">{{ formatCurrency(req.proposedRent) }}</span>
+                        <span class="info-value highlight">{{ formatCurrency(req.proposedRent ?? 0) }}</span>
                     </div>
 
                     <div class="info-item">

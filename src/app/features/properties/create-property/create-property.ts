@@ -50,8 +50,8 @@ export class CreateProperty {
       state: ['', Validators.required],
       country: ['', Validators.required],
       postalCode: ['', Validators.required],
-      latitude: [null],
-      longitude: [null],
+      latitud: [null],
+      longitud: [null],
     });
   }
 
@@ -88,7 +88,7 @@ export class CreateProperty {
       title: v.title,
       description: v.description || undefined,
       transactionType: v.transactionType,
-      priceAmount: v.priceAmount,
+      priceAmount: parseInt(String(v.priceAmount), 10),
       typeProperty: v.typeProperty,
       numberOfBedrooms: v.numberOfBedrooms || undefined,
       numberOfBathrooms: v.numberOfBathrooms || undefined,
@@ -98,8 +98,8 @@ export class CreateProperty {
       paymentFrequency: v.transactionType === 'RENT' ? v.paymentFrequency : undefined,
       address: { street: v.street, city: v.city, state: v.state, country: v.country, postalCode: v.postalCode },
     };
-    const latValue = String(v.latitude || '').trim();
-    const lngValue = String(v.longitude || '').trim();
+    const latValue = String(v.latitud || '').trim();
+    const lngValue = String(v.longitud || '').trim();
 
     if (latValue && lngValue) {
       data.coordinates = {
@@ -110,8 +110,17 @@ export class CreateProperty {
     }
 
     const formData = new FormData();
-    formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-    this.selectedFiles.forEach(f => formData.append('files', f));
+
+    const jsonBlob = new Blob(
+      [JSON.stringify(data)],
+      { type: 'application/json' }
+    );
+
+    formData.append('data', jsonBlob);
+
+    this.selectedFiles.forEach(file => {
+      formData.append('files', file);
+    });
 
     console.log('Token:', localStorage.getItem('token'));
     console.log('FormData entries:');
@@ -127,6 +136,8 @@ export class CreateProperty {
         this.ngZone.run(() => {
           this.toast.success('¡Propiedad creada correctamente!');
           this.router.navigate(['/my-properties']);
+          console.log('Datos enviados:', data);
+
         });
       },
       error: () => {
@@ -144,5 +155,12 @@ export class CreateProperty {
     const input = event.target as HTMLInputElement;
     const fixed = input.value.replace(',', '.');
     this.form.get(field)?.setValue(fixed, { emitEvent: false });
+  }
+
+  sanitizeInt(field: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const clean = input.value.replace(/[^0-9]/g, '');
+    input.value = clean;
+    this.form.get(field)?.setValue(clean === '' ? null : clean, { emitEvent: false });
   }
 }

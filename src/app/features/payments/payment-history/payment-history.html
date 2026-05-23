@@ -1,0 +1,128 @@
+<div class="ph-page">
+
+  <div class="ph-loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando historial de pagos...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <div class="ph-header">
+      <div class="ph-header-left">
+        <button class="btn-back" (click)="goToContract()">
+          <i class='bx bx-arrow-back'></i> Volver al contrato
+        </button>
+
+        <div class="ph-title-group">
+          <h1><i class='bx bx-history'></i> Historial de pagos</h1>
+          <p *ngIf="!loadingContract && contract">
+            {{ contract.propertyTitle }}
+          </p>
+        </div>
+      </div>
+
+      <button class="btn-download-pdf"
+              *ngIf="payments.length > 0"
+              (click)="downloadHistoryPdf()"
+              [disabled]="downloadingPdf">
+        <i class='bx'
+           [class.bx-download]="!downloadingPdf"
+           [class.bx-loader-circle]="downloadingPdf"
+           [class.bx-spin]="downloadingPdf"></i>
+        {{ downloadingPdf ? 'Generando PDF...' : 'Exportar historial PDF' }}
+      </button>
+    </div>
+
+    <div class="ph-summary" *ngIf="payments.length > 0">
+
+      <div class="summary-card">
+        <div class="summary-icon blue"><i class='bx bx-credit-card'></i></div>
+        <div class="summary-body">
+          <span class="summary-label">Total pagado</span>
+          <span class="summary-value">{{ formatCurrency(totalPaid) }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon green"><i class='bx bx-check-circle'></i></div>
+        <div class="summary-body">
+          <span class="summary-label">Pagos realizados</span>
+          <span class="summary-value">{{ payments.length }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card" *ngIf="!loadingContract && contract">
+        <div class="summary-icon gray"><i class='bx bx-calendar'></i></div>
+        <div class="summary-body">
+          <span class="summary-label">Frecuencia</span>
+          <span class="summary-value">{{ contract.paymentFrequency === 'MONTHLY' ? 'Mensual' : contract.paymentFrequency === 'BIWEEKLY' ? 'Quincenal' : 'Semanal' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="ph-empty" *ngIf="payments.length === 0">
+      <i class='bx bx-receipt'></i>
+      <h3>Sin pagos registrados</h3>
+      <p>Aún no se han procesado pagos para este contrato.</p>
+      <button class="btn-back-link" (click)="goToContract()">
+        <i class='bx bx-arrow-back'></i> Ver contrato
+      </button>
+    </div>
+
+    <div class="ph-list" *ngIf="payments.length > 0">
+
+      <div class="ph-item" *ngFor="let p of payments; let i = index">
+
+        <div class="ph-item-left">
+          <div class="ph-index">
+            <span>#{{ payments.length - i }}</span>
+          </div>
+
+          <div class="ph-item-info">
+            <div class="ph-item-period">
+              <i class='bx bx-calendar-alt'></i>
+            </div>
+            <div class="ph-item-date">
+              Pagado el <strong>{{ formatDate(p.paidAt) }}</strong>
+            </div>
+            <div class="ph-item-id" title="{{ p.paymentId }}">
+              ID: {{ p.paymentId | slice:0:18 }}...
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-item-right">
+          <span class="ph-amount">{{ formatCurrency(p.amount) }}</span>
+
+          <div class="ph-item-badge">
+            <i class='bx bx-check-circle'></i> Pagado
+          </div>
+
+          <button class="btn-receipt"
+                  (click)="downloadReceipt(p.paymentId)"
+                  [disabled]="downloadingId === p.paymentId">
+            <i class='bx'
+               [class.bx-download]="downloadingId !== p.paymentId"
+               [class.bx-loader-circle]="downloadingId === p.paymentId"
+               [class.bx-spin]="downloadingId === p.paymentId"></i>
+            {{ downloadingId === p.paymentId ? 'Descargando...' : 'Comprobante' }}
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="ph-footer">
+      <button class="btn-ghost" (click)="goToContracts()">
+        <i class='bx bx-list-ul'></i> Mis contratos
+      </button>
+      <button class="btn-ghost" (click)="goToContract()">
+        <i class='bx bx-file-blank'></i> Ver contrato
+      </button>
+    </div>
+
+  </ng-container>
+
+</div>

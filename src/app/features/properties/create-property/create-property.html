@@ -24,7 +24,6 @@
                     <label>Tipo de transacción <span class="req">*</span></label>
                     <select formControlName="transactionType">
                         <option value="RENT">Arriendo</option>
-                        <option value="SALE">Venta</option>
                     </select>
                 </div>
                 <div class="field">
@@ -42,8 +41,9 @@
             <div class="field-row">
                 <div class="field">
                     <label>Precio (COP) <span class="req">*</span></label>
-                    <input formControlName="priceAmount" type="number" min="1" placeholder="Ej: 1500000">
-                    <span class="err" *ngIf="form.get('priceAmount')!.touched && form.get('priceAmount')!.invalid">
+                    <input formControlName="priceAmount" type="text" placeholder="Ej: 1500000"
+                        (input)="sanitizeInt('priceAmount', $event)"> <span class="err"
+                        *ngIf="form.get('priceAmount')!.touched && form.get('priceAmount')!.invalid">
                         Ingresa un precio válido
                     </span>
                 </div>
@@ -63,15 +63,18 @@
             <div class="field-row">
                 <div class="field">
                     <label>Habitaciones</label>
-                    <input formControlName="numberOfBedrooms" type="number" min="0" placeholder="0">
+                    <input formControlName="numberOfBedrooms" type="text" placeholder="0"
+                        (input)="sanitizeInt('numberOfBedrooms', $event)">
                 </div>
                 <div class="field">
                     <label>Baños</label>
-                    <input formControlName="numberOfBathrooms" type="number" min="0" placeholder="0">
+                    <input formControlName="numberOfBathrooms" type="text" placeholder="0"
+                        (input)="sanitizeInt('numberOfBathrooms', $event)">
                 </div>
                 <div class="field">
                     <label>Área (m²)</label>
-                    <input formControlName="areaInSquareMeters" type="number" min="1" placeholder="Ej: 65">
+                    <input formControlName="areaInSquareMeters" type="text" placeholder="Ej: 65"
+                        (input)="sanitizeInt('areaInSquareMeters', $event)">
                 </div>
             </div>
             <div class="field-row">
@@ -121,12 +124,14 @@
             <div class="field-row">
                 <div class="field">
                     <label>Latitud</label>
-                    <input type="text" formControlName="latitude" (input)="sanitizeDecimal('latitude', $event)">
+                    <input type="text" formControlName="latitud" placeholder="Ej: 4.710989"
+                        (input)="sanitizeDecimal('latitud', $event)">
                 </div>
 
                 <div class="field">
                     <label>Longitud</label>
-                    <input type="text" formControlName="longitude" (input)="sanitizeDecimal('longitude', $event)">
+                    <input type="text" formControlName="longitud" placeholder="Ej: -74.072090"
+                        (input)="sanitizeDecimal('longitud', $event)">
                 </div>
             </div>
         </div>

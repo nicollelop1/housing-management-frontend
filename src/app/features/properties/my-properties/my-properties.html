@@ -10,15 +10,24 @@
         </a>
     </div>
 
+    <div class="filter-tabs">
+        <button *ngFor="let tab of filterTabs"
+                class="filter-tab"
+                [class.active]="activeFilter === tab.value"
+                (click)="setFilter(tab.value); $event.stopPropagation()">
+            <i class='bx' [ngClass]="tab.icon"></i>
+            {{ tab.label }}
+        </button>
+    </div>
+
     <div *ngIf="loading" class="loading-state">
         <div class="spinner"></div> Cargando propiedades...
     </div>
 
     <div *ngIf="!loading && properties.length === 0" class="empty-state">
         <i class='bx bx-buildings'></i>
-        <h3>No tienes propiedades aún</h3>
-        <p>Crea tu primera propiedad para empezar.</p>
-
+        <h3>No hay propiedades en esta categoría</h3>
+        <p>Prueba otro filtro o crea una nueva propiedad.</p>
     </div>
 
     <div class="prop-list" *ngIf="!loading && properties.length > 0">
@@ -31,47 +40,41 @@
             <div class="prop-info">
                 <div class="prop-top">
                     <span class="prop-title">{{ p.title }}</span>
-                    <span class="prop-status" [ngClass]="statusClass(p.status)">
-
+                    <span class="status-badge" [ngClass]="statusClass(p.status)">
                         <i class='bx' [ngClass]="statusIcon(p.status)"></i>
-
                         {{ formatStatus(p.status) }}
-
                     </span>
-                </div>
-                <div class="prop-sub">
-
-                    <span *ngIf="p.transactionType === 'RENT'">
-                        <i class='bx bx-home'></i> Arriendo
-                    </span>
-
-                    <span *ngIf="p.transactionType === 'SALE'">
-                        <i class='bx bx-dollar'></i> Venta
-                    </span>
-
                 </div>
                 <div class="prop-price">
                     {{ p.priceAmount | currency:'COP':'symbol':'1.0-0' }}
-                    <span class="price-freq" *ngIf="p.transactionType === 'RENT'">/mes</span>
                 </div>
             </div>
 
             <div class="prop-actions">
 
-                <button class="btn-publish" [disabled]="p.status === 'PUBLISHED'" [ngClass]="{
-    'btn-published': p.status === 'PUBLISHED'
-  }" (click)="p.status !== 'PUBLISHED' && publishProperty(p.id, $event)">
-
-                    <i class='bx' [ngClass]="p.status === 'PUBLISHED'
-      ? 'bx-check-circle'
-      : 'bx-upload'"></i>
-
-                    {{ p.status === 'PUBLISHED' ? 'Publicada' : 'Publicar' }}
-
+                <button class="btn-publish btn-do-publish"
+                        *ngIf="p.status === 'CREATED' || p.status === 'DISABLED'"
+                        (click)="togglePublish(p, $event)">
+                    <i class='bx bx-upload'></i> Publicar
                 </button>
-                <button class="btn-delete" [disabled]="!canDelete(p)"
-                    [title]="canDelete(p) ? 'Eliminar' : 'No se puede eliminar (propiedad arrendada/vendida)'"
-                    (click)="askDelete(p.id, $event)">
+
+                <button class="btn-publish btn-do-unpublish"
+                        *ngIf="p.status === 'PUBLISHED'"
+                        (click)="togglePublish(p, $event)">
+                    <i class='bx bx-hide'></i> Despublicar
+                </button>
+
+                <button class="btn-publish btn-locked" disabled
+                        *ngIf="p.status !== 'CREATED' && p.status !== 'PUBLISHED' && p.status !== 'DISABLED'"
+                        [title]="p.status === 'RENTED' ? 'Propiedad arrendada' : p.status === 'SOLD' ? 'Propiedad vendida' : 'No disponible'">
+                    <i class='bx bx-lock'></i>
+                    {{ p.status === 'RENTED' ? 'Arrendada' : p.status === 'SOLD' ? 'Vendida' : 'No disponible' }}
+                </button>
+
+                <button class="btn-delete"
+                        [disabled]="!canDelete(p)"
+                        [title]="canDelete(p) ? 'Eliminar' : 'No se puede eliminar (propiedad arrendada/vendida)'"
+                        (click)="askDelete(p.id, $event)">
                     <i class='bx bx-trash'></i>
                 </button>
 

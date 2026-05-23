@@ -1,4 +1,4 @@
-import { Component, OnInit, afterNextRender, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -6,8 +6,10 @@ import { ContractService } from '../../../core/services/contract.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../shared/services/toast';
-import { Contract, ContractStatus } from '../../../core/models/contract';
+import { Contract, ContractStatus, getContractId } from '../../../core/models/contract';
+import { NextPaymentInfo } from '../../../core/models/payment';
 import { getHttpErrorMessage } from '../../../core/utils/http-error-handler';
+
 
 @Component({
   selector: 'app-contract-detail',
@@ -22,20 +24,20 @@ export class ContractDetail implements OnInit {
   loading = true;
   contractId = '';
 
-  
   downloadingPdf = false;
   initiatingPayment = false;
   downloadingReceipt = false;
 
-  
   showCancelModal = false;
   cancelling = false;
 
-  
   showTerminateModal = false;
   terminating = false;
 
   currentUserId: number | null = null;
+
+  nextPayment: NextPaymentInfo | null = null;
+  loadingNextPayment = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,48 +47,124 @@ export class ContractDetail implements OnInit {
     private authService: AuthService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
-  ) {
-    afterNextRender(() => this.load());
-  }
+  ) { }
 
   ngOnInit(): void {
     this.contractId = this.route.snapshot.paramMap.get('id') ?? '';
     this.currentUserId = this.authService.currentUser?.id ?? null;
+    this.load();
   }
 
   load(): void {
-    if (!this.contractId) {
-      this.router.navigate(['/contracts']);
-      return;
-    }
+    if (!this.contractId) return;
+
     this.loading = true;
-    this.cdr.detectChanges();
+    this.nextPayment = null;
 
     this.contractService.getById(this.contractId).subscribe({
       next: (c) => {
         this.contract = c;
         this.loading = false;
         this.cdr.detectChanges();
+
+        if (c.status === 'ACTIVE') {
+          this.loadNextPayment();
+        }
       },
       error: (err) => {
-        this.toast.error(getHttpErrorMessage(err));
+        console.log('ERROR CONTRATO:', err);
         this.loading = false;
         this.cdr.detectChanges();
-        if (err.status === 404) this.router.navigate(['/contracts']);
       }
     });
   }
 
-  get isOwner(): boolean {
-    return !!this.contract && this.contract.ownerId === this.currentUserId;
+  private loadNextPayment(): void {
+    this.loadingNextPayment = true;
+
+    this.paymentService.getNextPayment(this.contractId).subscribe({
+      next: (info) => {
+        this.nextPayment = info;
+        this.loadingNextPayment = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingNextPayment = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  get isTenant(): boolean {
-    return !!this.contract && this.contract.tenantId === this.currentUserId;
+  get isOwner(): boolean { return !!this.contract && this.contract.ownerId === this.currentUserId; }
+  get isTenant(): boolean { return !!this.contract && this.contract.tenantId === this.currentUserId; }
+
+  get isPaymentPending(): boolean { return this.contract?.status === 'PAYMENT_PENDING'; }
+  get isPaidNotStarted(): boolean { return this.contract?.status === 'PAID_NOT_STARTED'; }
+  get isActive(): boolean { return this.contract?.status === 'ACTIVE'; }
+  get isCancellationPending(): boolean { return this.contract?.status === 'CANCELLATION_PENDING'; }
+  get isTerminated(): boolean { return this.contract?.status === 'TERMINATED'; }
+  get isCancelled(): boolean { return this.contract?.status === 'CANCELLED'; }
+  get isExpired(): boolean { return this.contract?.status === 'EXPIRED'; }
+
+  get canPayInitial(): boolean {
+    return this.isTenant && this.isPaymentPending;
   }
 
-  get isActive(): boolean {
-    return this.contract?.status === 'ACTIVE';
+  get canPayPeriodic(): boolean {
+    return this.isTenant && this.isActive && (this.nextPayment?.canPayNextPeriod === true);
+  }
+
+  get canShowCancelButton(): boolean {
+    return this.isPaymentPending || this.isActive;
+  }
+
+  get isImmediateCancel(): boolean {
+    return this.isPaymentPending;
+  }
+
+  get cancelModalConfig(): { title: string; body: string; btnLabel: string } {
+    if (this.isImmediateCancel) {
+      return {
+        title: '¿Cancelar contrato?',
+        body: 'El contrato aún no ha sido pagado. Se cancelará de inmediato y ambas partes serán notificadas.',
+        btnLabel: 'Sí, cancelar'
+      };
+    }
+    return {
+      title: '¿Solicitar cancelación?',
+      body: 'Se iniciará un proceso de cancelación. El contrato permanecerá activo durante 1 mes antes de cancelarse definitivamente.',
+      btnLabel: 'Sí, solicitar cancelación'
+    };
+  }
+
+  initiatePayment(): void {
+    if (this.initiatingPayment) return;
+    this.initiatingPayment = true;
+    this.cdr.detectChanges();
+
+    this.paymentService.initiate(this.contractId).subscribe({
+      next: (res) => { window.location.href = res.checkoutUrl; },
+      error: (err) => {
+        this.toast.error('No se pudo iniciar el pago. ' + getHttpErrorMessage(err));
+        this.initiatingPayment = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  periodicPayment(): void {
+    if (this.initiatingPayment) return;
+    this.initiatingPayment = true;
+    this.cdr.detectChanges();
+
+    this.paymentService.payPeriodic(this.contractId).subscribe({
+      next: (res) => { window.location.href = res.checkoutUrl; },
+      error: (err) => {
+        this.toast.error('No se pudo procesar el pago. ' + getHttpErrorMessage(err));
+        this.initiatingPayment = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   downloadPdf(): void {
@@ -96,12 +174,7 @@ export class ContractDetail implements OnInit {
 
     this.contractService.downloadPdf(this.contractId).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `contrato_${this.contractId}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
+        this.triggerDownload(blob, `contrato_${this.contractId}.pdf`);
         this.downloadingPdf = false;
         this.cdr.detectChanges();
       },
@@ -113,36 +186,14 @@ export class ContractDetail implements OnInit {
     });
   }
 
-  initiatePayment(): void {
-    if (this.initiatingPayment) return;
-    this.initiatingPayment = true;
-    this.cdr.detectChanges();
-
-    this.paymentService.initiate(this.contractId).subscribe({
-      next: (res) => {
-        window.location.href = res.checkoutUrl;
-      },
-      error: (err) => {
-        this.toast.error('No se pudo iniciar el pago. ' + getHttpErrorMessage(err));
-        this.initiatingPayment = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
   downloadReceipt(): void {
     if (this.downloadingReceipt) return;
     this.downloadingReceipt = true;
     this.cdr.detectChanges();
 
-    this.paymentService.downloadReceipt(this.contractId).subscribe({
+    this.paymentService.downloadReceiptByContract(this.contractId).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `comprobante_${this.contractId}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
+        this.triggerDownload(blob, `comprobante_${this.contractId}.pdf`);
         this.downloadingReceipt = false;
         this.cdr.detectChanges();
       },
@@ -157,7 +208,7 @@ export class ContractDetail implements OnInit {
     });
   }
 
-  openCancelModal(): void  { this.showCancelModal = true; }
+  openCancelModal(): void { this.showCancelModal = true; }
   closeCancelModal(): void { this.showCancelModal = false; }
 
   confirmCancel(): void {
@@ -182,7 +233,7 @@ export class ContractDetail implements OnInit {
     });
   }
 
-  openTerminateModal(): void  { this.showTerminateModal = true; }
+  openTerminateModal(): void { this.showTerminateModal = true; }
   closeTerminateModal(): void { this.showTerminateModal = false; }
 
   confirmTerminate(): void {
@@ -206,45 +257,68 @@ export class ContractDetail implements OnInit {
     });
   }
 
-  formatStatus(status: ContractStatus): string {
-    const map: Record<ContractStatus, string> = {
-      ACTIVE:     'Activo',
+
+  private triggerDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  formatStatus(status: ContractStatus | string): string {
+    const map: Record<string, string> = {
+      PAYMENT_PENDING: 'Pago pendiente',
+      PAID_NOT_STARTED: 'Pagado – no iniciado',
+      ACTIVE: 'Activo',
+      CANCELLATION_PENDING: 'Cancelación pendiente',
       TERMINATED: 'Terminado',
-      CANCELLED:  'Cancelado',
-      EXPIRED:    'Expirado',
+      CANCELLED: 'Cancelado',
+      EXPIRED: 'Expirado',
     };
     return map[status] ?? status;
   }
 
-  statusClass(status: ContractStatus): string {
-    const map: Record<ContractStatus, string> = {
-      ACTIVE:     'status-active',
+  statusClass(status: ContractStatus | string): string {
+    const map: Record<string, string> = {
+      PAYMENT_PENDING: 'status-pending',
+      PAID_NOT_STARTED: 'status-paid-not-started',
+      ACTIVE: 'status-active',
+      CANCELLATION_PENDING: 'status-cancellation-pending',
       TERMINATED: 'status-terminated',
-      CANCELLED:  'status-cancelled',
-      EXPIRED:    'status-expired',
+      CANCELLED: 'status-cancelled',
+      EXPIRED: 'status-expired',
     };
     return map[status] ?? '';
   }
 
   formatFrequency(freq: string): string {
     const map: Record<string, string> = {
-      MONTHLY:   'Mensual',
-      BIWEEKLY:  'Quincenal',
-      WEEKLY:    'Semanal',
+      MONTHLY: 'Mensual',
+      BIWEEKLY: 'Quincenal',
+      WEEKLY: 'Semanal',
     };
     return map[freq] ?? freq;
   }
 
-  formatDate(date: string): string {
+  formatDate(date: any): string {
     if (!date) return '—';
-    return new Date(date).toLocaleDateString('es-CO', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    });
+    const parts = date.split('T')[0].split('-');
+    if (parts.length !== 3) return '—';
+    const [y, m, d] = parts;
+    const safeDate = new Date(Number(y), Number(m) - 1, Number(d));
+    return new Intl.DateTimeFormat('es-CO', {
+      year: 'numeric', month: 'long', day: '2-digit'
+    }).format(safeDate);
   }
 
-  formatCurrency(amount: number): string {
+  formatCurrency(amount: number | string | null | undefined): string {
+    const value = Number(amount ?? 0);
     return new Intl.NumberFormat('es-CO', {
-      style: 'currency', currency: 'COP', minimumFractionDigits: 0
-    }).format(amount);
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(value);
   }
 }

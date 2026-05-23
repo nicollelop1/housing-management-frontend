@@ -17,11 +17,10 @@
             </div>
 
             <span class="status-badge" [ngClass]="statusClass(contract.status)">
-                <i class='bx'
-                    [class.bx-check-circle]="contract.status === 'ACTIVE'"
-                    [class.bx-x-circle]="contract.status === 'CANCELLED'"
-                    [class.bx-flag]="contract.status === 'TERMINATED'"
-                    [class.bx-time]="contract.status === 'EXPIRED'"></i>
+                <i class='bx' [class.bx-time]="isPaymentPending" [class.bx-hourglass]="isPaidNotStarted"
+                    [class.bx-check-circle]="isActive" [class.bx-alarm]="isCancellationPending"
+                    [class.bx-flag]="isTerminated" [class.bx-x-circle]="isCancelled"
+                    [class.bx-alarm-off]="isExpired"></i>
                 {{ formatStatus(contract.status) }}
             </span>
         </div>
@@ -33,8 +32,7 @@
                 <div class="info-list">
                     <div class="info-row">
                         <span class="info-label">Nombre</span>
-                        <a class="info-value link"
-                            [routerLink]="['/properties-detail', contract.propertyId]">
+                        <a class="info-value link" [routerLink]="['/properties-detail', contract.propertyId]">
                             {{ contract.propertyTitle }}
                         </a>
                     </div>
@@ -83,8 +81,9 @@
                 <h2 class="card-title"><i class='bx bx-money'></i> Condiciones de pago</h2>
                 <div class="info-list">
                     <div class="info-row">
-                        <span class="info-label">Valor mensual</span>
-                        <span class="info-value highlight">{{ formatCurrency(contract.monthlyRent) }}</span>
+                        <span class="info-label">Valor por {{ formatFrequency(contract.paymentFrequency) | lowercase
+                            }}</span>
+                        <span class="info-value highlight">{{ formatCurrency(contract.periodRent) }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Frecuencia</span>
@@ -95,46 +94,196 @@
 
         </div>
 
+
         <div class="cd-actions">
+            <div class="payment-banner banner-owner" *ngIf="isOwner && isPaymentPending">
+                <div class="banner-icon"><i class='bx bx-time-five'></i></div>
+                <div class="banner-body">
+                    <strong>Contrato en espera de pago</strong>
+                    <p>
+                        El arrendatario debe realizar el pago inicial antes del
+                        <strong>{{ formatDate(contract.startDate) }}</strong>
+                        para activar el contrato.
+                    </p>
+                </div>
+            </div>
 
-            <button class="btn-action btn-pdf" (click)="downloadPdf()" [disabled]="downloadingPdf">
-                <i class='bx' [class.bx-download]="!downloadingPdf"
-                    [class.bx-loader-circle]="downloadingPdf"
-                    [class.bx-spin]="downloadingPdf"></i>
-                {{ downloadingPdf ? 'Descargando...' : 'Descargar contrato PDF' }}
-            </button>
+            <div class="payment-banner banner-tenant" *ngIf="canPayInitial">
+                <div class="banner-icon"><i class='bx bx-credit-card'></i></div>
+                <div class="banner-body">
+                    <strong>¡Acción requerida! Realiza tu primer pago</strong>
+                    <p>
+                        Completa el pago inicial antes del
+                        <strong>{{ formatDate(contract.startDate) }}</strong>
+                        para activar el contrato.
+                    </p>
+                </div>
+                <button class="btn-pay-now" (click)="initiatePayment()" [disabled]="initiatingPayment">
+                    <i class='bx' [class.bx-credit-card]="!initiatingPayment"
+                        [class.bx-loader-circle]="initiatingPayment" [class.bx-spin]="initiatingPayment"></i>
+                    {{ initiatingPayment ? 'Redirigiendo...' : 'Realizar pago inicial' }}
+                </button>
+            </div>
 
-            <button
-                *ngIf="isTenant && isActive"
-                class="btn-action btn-pay"
-                (click)="initiatePayment()"
-                [disabled]="initiatingPayment">
-                <i class='bx' [class.bx-credit-card]="!initiatingPayment"
-                    [class.bx-loader-circle]="initiatingPayment"
-                    [class.bx-spin]="initiatingPayment"></i>
-                {{ initiatingPayment ? 'Redirigiendo a Stripe...' : 'Pagar arriendo' }}
-            </button>
+            <div class="payment-banner banner-info" *ngIf="isPaidNotStarted">
+                <div class="banner-icon"><i class='bx bx-hourglass'></i></div>
+                <div class="banner-body">
+                    <strong>Pago realizado — contrato en espera de inicio</strong>
+                    <p>
+                        El pago inicial fue completado. El contrato se activará automáticamente
+                        el <strong>{{ formatDate(contract.startDate) }}</strong>.
+                    </p>
+                </div>
+            </div>
 
-            <button class="btn-action btn-receipt" (click)="downloadReceipt()" [disabled]="downloadingReceipt">
-                <i class='bx' [class.bx-receipt]="!downloadingReceipt"
-                    [class.bx-loader-circle]="downloadingReceipt"
-                    [class.bx-spin]="downloadingReceipt"></i>
-                {{ downloadingReceipt ? 'Descargando...' : 'Comprobante de pago' }}
-            </button>
 
-            <button
-                *ngIf="isActive"
-                class="btn-action btn-cancel"
-                (click)="openCancelModal()">
-                <i class='bx bx-x-circle'></i> Cancelar contrato
-            </button>
+            <ng-container *ngIf="isActive">
 
-            <button
-                *ngIf="isOwner && isActive"
-                class="btn-action btn-terminate"
-                (click)="openTerminateModal()">
-                <i class='bx bx-flag'></i> Terminar contrato
-            </button>
+                <div class="payment-banner banner-info" *ngIf="loadingNextPayment">
+                    <div class="banner-icon"><i class='bx bx-loader-circle bx-spin'></i></div>
+                    <div class="banner-body">
+                        <strong>Cargando información de pago...</strong>
+                    </div>
+                </div>
+
+                <ng-container *ngIf="!loadingNextPayment && nextPayment">
+
+                    <div class="payment-banner banner-danger" *ngIf="nextPayment.isOverdue">
+                        <div class="banner-icon"><i class='bx bx-error-circle'></i></div>
+                        <div class="banner-body">
+                            <strong>¡Pago vencido!</strong>
+                            <p>
+                                El pago de <strong>{{ formatCurrency(nextPayment.amount) }}</strong>
+                                venció el <strong>{{ formatDate(nextPayment.dueDate) }}</strong>.
+                                <span *ngIf="isTenant"> Realízalo a la brevedad posible.</span>
+                                <span *ngIf="isOwner"> El arrendatario tiene un pago pendiente.</span>
+                            </p>
+                        </div>
+                        <button class="btn-pay-now btn-pay-danger" *ngIf="canPayPeriodic" (click)="periodicPayment()"
+                            [disabled]="initiatingPayment">
+                            <i class='bx' [class.bx-credit-card]="!initiatingPayment"
+                                [class.bx-loader-circle]="initiatingPayment" [class.bx-spin]="initiatingPayment"></i>
+                            {{ initiatingPayment ? 'Redirigiendo...' : 'Pagar ahora' }}
+                        </button>
+                    </div>
+
+                    <div class="payment-banner banner-tenant"
+                        *ngIf="!nextPayment.isOverdue && nextPayment.canPayNextPeriod">
+                        <div class="banner-icon"><i class='bx bx-calendar-check'></i></div>
+                        <div class="banner-body">
+                            <strong>¡Puedes realizar tu pago {{ formatFrequency(contract.paymentFrequency) | lowercase
+                                }}!</strong>
+                            <p>
+                                Período: <strong>{{ nextPayment.nextPeriodDescription }}</strong><br>
+                                Monto: <strong>{{ formatCurrency(nextPayment.nextPeriodAmount) }}</strong>
+                                — vence el <strong>{{ formatDate(nextPayment.dueDate) }}</strong>
+                                ({{ nextPayment.daysRemaining }} día(s) restante(s)).
+                            </p>
+                        </div>
+
+
+                        <button class="btn-pay-now" *ngIf="isTenant" (click)="periodicPayment()"
+                            [disabled]="initiatingPayment">
+                            <i class='bx' [class.bx-credit-card]="!initiatingPayment"
+                                [class.bx-loader-circle]="initiatingPayment" [class.bx-spin]="initiatingPayment"></i>
+                            {{ initiatingPayment ? 'Redirigiendo...' : 'Pagar arriendo' }}
+                        </button>
+                    </div>
+
+                    <div class="payment-banner banner-owner"
+                        *ngIf="!nextPayment.isOverdue && !nextPayment.canPayNextPeriod">
+                        <div class="banner-icon"><i class='bx bx-calendar'></i></div>
+                        <div class="banner-body">
+                            <strong>Próximo pago {{ formatFrequency(contract.paymentFrequency) | lowercase }}</strong>
+                            <p>
+                                Período: <strong>{{ nextPayment.nextPeriodDescription }}</strong><br>
+                                Monto: <strong>{{ formatCurrency(nextPayment.nextPeriodAmount) }}</strong>
+                                — vence el <strong>{{ formatDate(nextPayment.dueDate) }}</strong>.
+                                El botón de pago se habilitará
+                                <ng-container [ngSwitch]="contract.paymentFrequency">
+                                    <span *ngSwitchCase="'MONTHLY'">10 días antes.</span>
+                                    <span *ngSwitchCase="'BIWEEKLY'">5 días antes.</span>
+                                    <span *ngSwitchDefault>3 días antes.</span>
+                                </ng-container>
+                            </p>
+                        </div>
+                    </div>
+
+                </ng-container>
+
+            </ng-container>
+
+
+            <div class="payment-banner banner-warn" *ngIf="isCancellationPending">
+                <div class="banner-icon"><i class='bx bx-alarm'></i></div>
+                <div class="banner-body">
+                    <strong>Cancelación en proceso</strong>
+                    <p>
+                        Se ha solicitado la cancelación del contrato. Esta se hará efectiva
+                        pasado <strong>1 mes</strong> desde la solicitud.
+                        Tanto el propietario como el arrendatario han sido notificados.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="payment-banner banner-info" *ngIf="isTerminated">
+                <div class="banner-icon"><i class='bx bx-flag'></i></div>
+                <div class="banner-body">
+                    <strong>Contrato terminado</strong>
+                    <p>
+                        El contrato ha llegado a su fin. El período de arrendamiento
+                        concluyó el <strong>{{ formatDate(contract.endDate) }}</strong>.
+                        Gracias por usar Voltrix House.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="payment-banner banner-danger" *ngIf="isCancelled">
+                <div class="banner-icon"><i class='bx bx-x-circle'></i></div>
+                <div class="banner-body">
+                    <strong>Contrato cancelado</strong>
+                    <p>
+                        Este contrato fue cancelado y ya no está vigente.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="payment-banner banner-danger" *ngIf="isExpired">
+                <div class="banner-icon"><i class='bx bx-alarm-off'></i></div>
+                <div class="banner-body">
+                    <strong>Contrato vencido por falta de pago</strong>
+                    <p>
+                        El contrato fue terminado automáticamente porque el pago inicial
+                        no fue completado en el tiempo establecido.
+                    </p>
+                </div>
+            </div>
+
+            <div class="cd-buttons">
+                <button class="btn-action btn-pdf" (click)="downloadPdf()" [disabled]="downloadingPdf">
+                    <i class='bx' [class.bx-download]="!downloadingPdf" [class.bx-loader-circle]="downloadingPdf"
+                        [class.bx-spin]="downloadingPdf"></i>
+                    {{ downloadingPdf ? 'Descargando...' : 'Descargar contrato PDF' }}
+                </button>
+
+                <button class="btn-action btn-receipt" (click)="downloadReceipt()" [disabled]="downloadingReceipt">
+                    <i class='bx' [class.bx-receipt]="!downloadingReceipt" [class.bx-loader-circle]="downloadingReceipt"
+                        [class.bx-spin]="downloadingReceipt"></i>
+                    {{ downloadingReceipt ? 'Descargando...' : 'Comprobante de pago' }}
+                </button>
+
+                <button *ngIf="canShowCancelButton" class="btn-action" [class.btn-cancel]="isImmediateCancel"
+                    [class.btn-terminate]="!isImmediateCancel" (click)="openCancelModal()">
+                    <i class='bx' [class.bx-x-circle]="isImmediateCancel" [class.bx-alarm]="!isImmediateCancel"></i>
+                    {{ isImmediateCancel ? 'Cancelar contrato' : 'Solicitar cancelación' }}
+                </button>
+
+
+            </div>
+
 
         </div>
 
@@ -151,39 +300,17 @@
 
 <div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
     <div class="modal-box" (click)="$event.stopPropagation()">
-        <i class='bx bx-error-circle modal-icon warn'></i>
-        <h3>¿Cancelar contrato?</h3>
-        <p>
-            Esta acción cancelará el contrato activo. Tanto el propietario
-            como el arrendatario serán notificados.
-        </p>
+        <i class='bx modal-icon' [class.bx-error-circle]="isImmediateCancel" [class.bx-alarm]="!isImmediateCancel"
+            [class.warn]="isImmediateCancel" [class.info]="!isImmediateCancel"></i>
+        <h3>{{ cancelModalConfig.title }}</h3>
+        <p>{{ cancelModalConfig.body }}</p>
         <div class="modal-actions">
             <button class="btn-modal-secondary" (click)="closeCancelModal()" [disabled]="cancelling">
                 Volver
             </button>
             <button class="btn-modal-danger" (click)="confirmCancel()" [disabled]="cancelling">
                 <i class='bx bx-x'></i>
-                {{ cancelling ? 'Cancelando...' : 'Sí, cancelar' }}
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showTerminateModal" (click)="closeTerminateModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-        <i class='bx bx-flag modal-icon info'></i>
-        <h3>¿Terminar contrato?</h3>
-        <p>
-            Esto marcará el contrato como <strong>Terminado</strong>, indicando
-            que el período de arriendo llegó a su fin. Esta acción es definitiva.
-        </p>
-        <div class="modal-actions">
-            <button class="btn-modal-secondary" (click)="closeTerminateModal()" [disabled]="terminating">
-                Volver
-            </button>
-            <button class="btn-modal-primary" (click)="confirmTerminate()" [disabled]="terminating">
-                <i class='bx bx-flag'></i>
-                {{ terminating ? 'Procesando...' : 'Sí, terminar' }}
+                {{ cancelling ? 'Procesando...' : cancelModalConfig.btnLabel }}
             </button>
         </div>
     </div>

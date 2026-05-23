@@ -59,7 +59,7 @@ export class ViewProfile implements OnInit {
 
     return `https://ui-avatars.com/api/?background=0b254d&color=fff&size=200&bold=true&name=${initial}&length=2`;
   }
-  
+
   get fullName(): string {
     if (!this.profile) return 'Usuario';
     const parts = [
@@ -73,5 +73,8 @@ export class ViewProfile implements OnInit {
 
   goToEdit(): void {
     this.router.navigate(['/profile/edit']);
+  }
+  goToForgotPassword(): void {
+    this.router.navigate(['/forgot-password']);
   }
 }

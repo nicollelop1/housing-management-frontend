@@ -1,29 +1,17 @@
-
 <div class="contracts-page">
 
   <div class="page-header">
-    <h1>Mis contratos</h1>
-    <p>Gestiona todos tus contratos de arriendo</p>
-  </div>
+    <div>
+      <h1>Mis contratos</h1>
+      <p>Gestiona todos tus contratos de arriendo</p>
+    </div>
 
-  <div class="tabs">
-
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'OWNER'"
-      (click)="setTab('OWNER')"
-    >
-      Como propietario
+    <button class="btn-refresh" (click)="refreshTab()" [disabled]="loadingOwner || loadingTenant">
+      <i class='bx bx-refresh' [class.bx-spin]="loadingOwner || loadingTenant"></i>
+      Actualizar
     </button>
 
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'TENANT'"
-      (click)="setTab('TENANT')"
-    >
-      Como arrendatario
-    </button>
-
+    <div class="mode-indicator">{{ currentModeLabel }}</div>
   </div>
 
   <div *ngIf="isLoading()" class="loading-container">
@@ -31,101 +19,65 @@
     <p>Cargando contratos...</p>
   </div>
 
-  <div
-    *ngIf="!isLoading() && getContracts().length === 0"
-    class="empty-state"
-  >
+  <div *ngIf="!isLoading() && getContracts().length === 0" class="empty-state">
     <i class='bx bx-file'></i>
     <h3>No tienes contratos</h3>
     <p>Aún no hay contratos disponibles en esta sección.</p>
   </div>
 
-  <div class="contracts-grid" *ngIf="!isLoading()">
-
-    <div
-      class="contract-card"
-      *ngFor="let contract of getContracts()"
-    >
+  <div class="contracts-grid" *ngIf="!isLoading() && getContracts().length > 0">
+    <div class="contract-card" *ngFor="let contract of getContracts()">
 
       <div class="card-top">
-
         <div>
           <h2>{{ contract.propertyTitle }}</h2>
-
-          <p *ngIf="activeTab === 'OWNER'">
-            Arrendatario:
-            <strong>{{ contract.tenantName }}</strong>
-          </p>
-
-          <p *ngIf="activeTab === 'TENANT'">
-            Propietario:
-            <strong>{{ contract.ownerName }}</strong>
-          </p>
+          <p>Propietario: <strong>{{ contract.ownerName }}</strong></p>
+          <p>Arrendatario: <strong>{{ contract.tenantName }}</strong></p>
         </div>
 
-        <span
-          class="status-badge"
-          [ngClass]="getStatusClass(contract.status)"
-        >
-          {{ contract.status }}
+        <span class="status-badge" [ngClass]="getStatusClass(contract.status)">
+          <i class='bx' [ngClass]="'bx ' + getStatusIcon(contract.status)"></i>
+          {{ formatStatus(contract.status) }}
         </span>
-
       </div>
 
       <div class="contract-info">
-
         <div class="info-item">
-          <span>Renta mensual</span>
-          <strong>
-            {{ contract.monthlyRent | currency:'COP':'symbol':'1.0-0' }}
-          </strong>
+          <span>Renta por {{ formatFrequency(contract.paymentFrequency) | lowercase }}</span>
+          <strong>{{ contract.periodRent | currency:'COP':'symbol':'1.0-0' }}</strong>
         </div>
-
         <div class="info-item">
           <span>Frecuencia</span>
-          <strong>{{ contract.paymentFrequency }}</strong>
+          <strong>{{ formatFrequency(contract.paymentFrequency) }}</strong>
         </div>
-
         <div class="info-item">
           <span>Inicio</span>
           <strong>{{ contract.startDate | date:'mediumDate' }}</strong>
         </div>
-
         <div class="info-item">
           <span>Finalización</span>
           <strong>{{ contract.endDate | date:'mediumDate' }}</strong>
         </div>
-
       </div>
 
       <div class="card-actions">
-
-        <button
-          class="btn-primary"
-          (click)="goToDetail(contract.contractId)"
-        >
-          Ver contrato
+        <button class="btn-primary" (click)="goToDetail(contract)">
+          <i class='bx bx-show'></i> Ver contrato
         </button>
-
-        <button
-          class="btn-secondary"
-          (click)="downloadPdf(contract.contractId)"
-        >
-          PDF
+        <button class="btn-secondary" (click)="downloadPdf(contract)">
+          <i class='bx bx-download'></i> PDF
         </button>
-
-        <button
-          *ngIf="contract.status === 'ACTIVE'"
-          class="btn-danger"
-          (click)="cancelContract(contract.contractId)"
-        >
-          Cancelar
+        <button *ngIf="canShowCancel(contract.status)"
+                class="btn-danger"
+                (click)="cancelContract(contract)">
+          <i class='bx'
+             [class.bx-x-circle]="contract.status === 'PAYMENT_PENDING'"
+             [class.bx-alarm]="contract.status !== 'PAYMENT_PENDING'"></i>
+          {{ cancelLabel(contract.status) }}
         </button>
-
       </div>
 
     </div>
-
   </div>
 
 </div>

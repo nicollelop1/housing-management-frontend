@@ -5,6 +5,8 @@ import { PropertyService } from '../../../core/services/property.service';
 import { Property, PropertyStatus } from '../../../core/models/property.model';
 import { ToastService } from '../../../shared/services/toast';
 
+type FilterStatus = 'ALL' | 'PUBLISHED' | 'CREATED' | 'RENTED' | 'DISABLED' | 'DELETED';
+
 @Component({
   selector: 'app-my-properties',
   standalone: true,
@@ -20,8 +22,16 @@ export class MyProperties implements OnInit {
   deleting = false;
   openMenuId: string | null = null;
 
-  readonly PLACEHOLDER = 'assets/img/property-placeholder.png';
-  readonly FALLBACK_URL = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80';
+  activeFilter: FilterStatus = 'ALL';
+
+  readonly FALLBACK_URL = 'https://salvamentomaritimo.es/assets/images/placeholder-image.png';
+
+  readonly filterTabs: { label: string; value: FilterStatus; icon: string }[] = [
+    { label: 'Todas',       value: 'ALL',      icon: 'bx-list-ul'       },
+    { label: 'Publicadas',  value: 'PUBLISHED', icon: 'bx-check-circle'  },
+    { label: 'Borradores',  value: 'CREATED',   icon: 'bx-edit'          },
+    { label: 'Arrendadas',  value: 'RENTED',    icon: 'bx-home-heart'    },
+  ];
 
   constructor(
     private propertyService: PropertyService,
@@ -34,9 +44,19 @@ export class MyProperties implements OnInit {
 
   ngOnInit(): void {}
 
+  setFilter(filter: FilterStatus): void {
+    if (this.activeFilter === filter) return;
+    this.activeFilter = filter;
+    this.load();
+  }
+
   load(): void {
     this.loading = true;
-    this.propertyService.getMyProperties(0, 50).subscribe({
+    this.cdr.detectChanges();
+
+    const status = this.activeFilter === 'ALL' ? undefined : this.activeFilter;
+
+    this.propertyService.getMyProperties(0, 50, status).subscribe({
       next: (data) => {
         this.properties = data.content || data;
         this.loading = false;
@@ -56,13 +76,7 @@ export class MyProperties implements OnInit {
 
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    if (img.src !== this.FALLBACK_URL) {
-      img.src = this.FALLBACK_URL;
-    }
-  }
-
-  canPublish(p: Property): boolean {
-    return p.status === 'CREATED' || p.status === 'DISABLED';
+    if (img.src !== this.FALLBACK_URL) img.src = this.FALLBACK_URL;
   }
 
   canDelete(p: Property): boolean {
@@ -108,36 +122,47 @@ export class MyProperties implements OnInit {
   formatType(type: string): string {
     const map: Record<string, string> = {
       APARTMENT: 'Apartamento', HOUSE: 'Casa', ROOM: 'Habitación',
-      STUDIO: 'Estudio', OFFICE: 'Oficina', LAND: 'Terreno'
+      STUDIO: 'Estudio', OFFICE: 'Oficina', LAND: 'Terreno',
     };
     return map[type] ?? type;
   }
 
-
-  publishProperty(id: string, event: Event): void {
+  togglePublish(property: Property, event: Event): void {
     event.stopPropagation();
-    this.propertyService.publish(id).subscribe({
+    const isPublished = property.status === 'PUBLISHED';
+    const request$ = isPublished
+      ? this.propertyService.disable(property.id)
+      : this.propertyService.publish(property.id);
+
+    request$.subscribe({
       next: () => {
-        this.toast.success('Propiedad publicada correctamente.');
-        const prop = this.properties.find(p => p.id === id);
-        if (prop) prop.status = 'PUBLISHED';
-        this.cdr.detectChanges();
+        property.status = isPublished ? 'DISABLED' : 'PUBLISHED';
+        this.toast.success(isPublished
+          ? 'Propiedad despublicada correctamente.'
+          : 'Propiedad publicada correctamente.');
+        if (this.activeFilter !== 'ALL') this.load();
+        else this.cdr.detectChanges();
       },
-      error: () => {
-        this.toast.error('Error al publicar la propiedad.');
-      }
+      error: () => this.toast.error(isPublished
+        ? 'Error al despublicar la propiedad.'
+        : 'Error al publicar la propiedad.')
     });
   }
 
   askDelete(id: string, event: Event): void {
     event.stopPropagation();
     this.openMenuId = null;
+    const prop = this.properties.find(p => p.id === id);
+    if (prop && !this.canDelete(prop)) {
+      this.toast.error(prop.status === 'RENTED'
+        ? 'No se puede eliminar la propiedad porque tiene un contrato de arriendo vigente.'
+        : 'No se puede eliminar una propiedad que ya ha sido vendida.');
+      return;
+    }
     this.confirmDeleteId = id;
   }
 
-  cancelDelete(): void {
-    this.confirmDeleteId = null;
-  }
+  cancelDelete(): void { this.confirmDeleteId = null; }
 
   confirmDelete(): void {
     if (!this.confirmDeleteId) return;
@@ -163,9 +188,7 @@ export class MyProperties implements OnInit {
     this.openMenuId = this.openMenuId === id ? null : id;
   }
 
-  closeMenu(): void {
-    this.openMenuId = null;
-  }
+  closeMenu(): void { this.openMenuId = null; }
 
   goToDetail(id: string): void {
     this.openMenuId = null;

@@ -129,7 +129,11 @@
   <div class="property-image-wrapper">
     <img [src]="getMainImage(property)" [alt]="property.title" (error)="onImageError($event)" loading="lazy">
     <span class="property-type">{{ property.transactionType === 'RENT' ? 'Arriendo' : 'Venta' }}</span>
+
+
   </div>
+
+  
 
   <div class="property-content">
     <h3>{{ property.title }}</h3>

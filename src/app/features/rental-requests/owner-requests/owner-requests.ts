@@ -72,12 +72,11 @@ export class OwnerRequests implements OnInit {
   setFilter(filter: RentalRequestStatus | 'ALL'): void {
     this.activeFilter = filter;
   }
-
-  countByStatus(status: RentalRequestStatus | 'ALL'): number {
+  countByStatus(status: string): number {
+    if (!this.requests) return 0;
     if (status === 'ALL') return this.requests.length;
-    return this.requests.filter(r => r.status === status).length;
+    return this.requests.filter(req => req.status === status).length;
   }
-
 
   accept(req: RentalRequest): void {
     if (this.actionId) return;
@@ -159,10 +158,11 @@ export class OwnerRequests implements OnInit {
   }
 
   getPropertyId(req: RentalRequest): string {
-    const pid = req.propertyId;
-    return typeof pid === 'object' ? (pid as { value: string }).value : pid;
+    if (req.propertyId && req.propertyId.value) {
+      return req.propertyId.value;
+    }
+    return '';
   }
-
   isActing(id: string): boolean {
     return this.actionId === id;
   }

@@ -1,4 +1,5 @@
 <div class="prop-form-page">
+
     <div class="form-header">
         <h1><i class='bx bx-plus-circle'></i> Editar propiedad</h1>
         <p>Completa los datos para editar tu propiedad.</p>
@@ -8,26 +9,45 @@
 
         <div class="form-section">
             <h2 class="section-title">Información básica</h2>
+
             <div class="field col-full">
                 <label>Título <span class="req">*</span></label>
-                <input formControlName="title" type="text" placeholder="Ej: Apartamento moderno en el centro">
-                <span class="err" *ngIf="form.get('title')!.touched && form.get('title')!.invalid">
+                <input
+                    formControlName="title"
+                    type="text"
+                    placeholder="Ej: Apartamento moderno en el centro"
+                >
+
+                <span
+                    class="err"
+                    *ngIf="form.get('title')!.touched && form.get('title')!.invalid"
+                >
                     El título es obligatorio (3–200 caracteres)
                 </span>
             </div>
+
             <div class="field col-full">
                 <label>Descripción</label>
-                <textarea formControlName="description" rows="4" placeholder="Describe la propiedad..."></textarea>
+
+                <textarea
+                    formControlName="description"
+                    rows="4"
+                    placeholder="Describe la propiedad..."
+                ></textarea>
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>Tipo de transacción <span class="req">*</span></label>
+
                     <select formControlName="transactionType">
                         <option value="RENT">Arriendo</option>
                     </select>
                 </div>
+
                 <div class="field">
                     <label>Tipo de propiedad <span class="req">*</span></label>
+
                     <select formControlName="typeProperty">
                         <option value="APARTMENT">Apartamento</option>
                         <option value="HOUSE">Casa</option>
@@ -38,16 +58,32 @@
                     </select>
                 </div>
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>Precio (COP) <span class="req">*</span></label>
-                    <input formControlName="priceAmount" type="number" min="1" placeholder="Ej: 1500000">
-                    <span class="err" *ngIf="form.get('priceAmount')!.touched && form.get('priceAmount')!.invalid">
+
+                    <input
+                        formControlName="priceAmount"
+                        type="text"
+                        placeholder="Ej: 1500000"
+                        (input)="sanitizeInt('priceAmount', $event)"
+                    >
+
+                    <span
+                        class="err"
+                        *ngIf="form.get('priceAmount')!.touched && form.get('priceAmount')!.invalid"
+                    >
                         Ingresa un precio válido
                     </span>
                 </div>
-                <div class="field" *ngIf="form.get('transactionType')!.value === 'RENT'">
+
+                <div
+                    class="field"
+                    *ngIf="form.get('transactionType')!.value === 'RENT'"
+                >
                     <label>Frecuencia de pago</label>
+
                     <select formControlName="paymentFrequency">
                         <option value="MONTHLY">Mensual</option>
                         <option value="BIWEEKLY">Quincenal</option>
@@ -59,30 +95,55 @@
 
         <div class="form-section">
             <h2 class="section-title">Características</h2>
+
             <div class="field-row">
                 <div class="field">
                     <label>Habitaciones</label>
-                    <input formControlName="numberOfBedrooms" type="number" min="0" placeholder="0">
+
+                    <input
+                        formControlName="numberOfBedrooms"
+                        type="text"
+                        placeholder="0"
+                        (input)="sanitizeInt('numberOfBedrooms', $event)"
+                    >
                 </div>
+
                 <div class="field">
                     <label>Baños</label>
-                    <input formControlName="numberOfBathrooms" type="number" min="0" placeholder="0">
+
+                    <input
+                        formControlName="numberOfBathrooms"
+                        type="text"
+                        placeholder="0"
+                        (input)="sanitizeInt('numberOfBathrooms', $event)"
+                    >
                 </div>
+
                 <div class="field">
                     <label>Área (m²)</label>
-                    <input formControlName="areaInSquareMeters" type="number" min="1" placeholder="Ej: 65">
+
+                    <input
+                        formControlName="areaInSquareMeters"
+                        type="text"
+                        placeholder="Ej: 65"
+                        (input)="sanitizeInt('areaInSquareMeters', $event)"
+                    >
                 </div>
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>¿Mascotas permitidas?</label>
+
                     <select formControlName="petsAllowed">
                         <option [ngValue]="false">No</option>
                         <option [ngValue]="true">Sí</option>
                     </select>
                 </div>
+
                 <div class="field">
                     <label>¿Amoblado?</label>
+
                     <select formControlName="furnished">
                         <option [ngValue]="false">No</option>
                         <option [ngValue]="true">Sí</option>
@@ -93,70 +154,149 @@
 
         <div class="form-section">
             <h2 class="section-title">Dirección</h2>
+
             <div class="field col-full">
                 <label>Calle / Dirección <span class="req">*</span></label>
-                <input formControlName="street" type="text" placeholder="Ej: Calle 72 #10-34">
+
+                <input
+                    formControlName="street"
+                    type="text"
+                    placeholder="Ej: Calle 72 #10-34"
+                >
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>Ciudad <span class="req">*</span></label>
-                    <input formControlName="city" type="text" placeholder="Bogotá">
+
+                    <input
+                        formControlName="city"
+                        type="text"
+                        placeholder="Bogotá"
+                    >
                 </div>
+
                 <div class="field">
                     <label>Departamento/Estado <span class="req">*</span></label>
-                    <input formControlName="state" type="text" placeholder="Cundinamarca">
+
+                    <input
+                        formControlName="state"
+                        type="text"
+                        placeholder="Cundinamarca"
+                    >
                 </div>
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>País <span class="req">*</span></label>
-                    <input formControlName="country" type="text" placeholder="Colombia">
+
+                    <input
+                        formControlName="country"
+                        type="text"
+                        placeholder="Colombia"
+                    >
                 </div>
+
                 <div class="field">
                     <label>Código postal <span class="req">*</span></label>
-                    <input formControlName="postalCode" type="text" placeholder="110111">
+
+                    <input
+                        formControlName="postalCode"
+                        type="text"
+                        placeholder="110111"
+                    >
                 </div>
             </div>
+
             <div class="field-row">
                 <div class="field">
                     <label>Latitud (opcional)</label>
-                    <input type="text" formControlName="latitude" (input)="sanitizeDecimal('latitude', $event)">
+
+                    <input
+                        type="text"
+                        formControlName="latitud"
+                        placeholder="Ej: 4.710989"
+                        (input)="sanitizeDecimal('latitud', $event)"
+                    >
                 </div>
+
                 <div class="field">
                     <label>Longitud (opcional)</label>
-                    <input type="text" formControlName="longitude" (input)="sanitizeDecimal('longitude', $event)">
+
+                    <input
+                        type="text"
+                        formControlName="longitud"
+                        placeholder="Ej: -74.072090"
+                        (input)="sanitizeDecimal('longitud', $event)"
+                    >
                 </div>
             </div>
         </div>
 
         <div class="form-section">
             <h2 class="section-title">Imágenes <span class="req">*</span></h2>
+
             <label class="upload-area">
                 <i class='bx bx-image-add'></i>
-                <span>Haz clic para subir imágenes</span>
-                <small>JPG, PNG — puedes subir varias</small>
-                <input type="file" multiple accept="image/*" (change)="onFilesChange($event)" style="display:none">
-            </label>
-            <div class="preview-grid" *ngIf="existingImages.length > 0">
-                <div class="preview-grid" *ngIf="newPreviews.length > 0">
-                    <div class="preview-item" *ngFor="let url of newPreviews; let i = index">
-                        <img [src]="url" alt="preview">
 
-                        <button type="button" class="remove-img" (click)="removeNewFile(i)">
-                            <i class='bx bx-x'></i>
-                        </button>
-                    </div>
+                <span>Haz clic para subir imágenes</span>
+
+                <small>JPG, PNG — puedes subir varias</small>
+
+                <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    (change)="onFilesChange($event)"
+                    style="display:none"
+                >
+            </label>
+
+            <div class="preview-grid" *ngIf="newPreviews.length > 0">
+                <div
+                    class="preview-item"
+                    *ngFor="let url of newPreviews; let i = index"
+                >
+                    <img [src]="url" alt="preview">
+
+                    <button
+                        type="button"
+                        class="remove-img"
+                        (click)="removeNewFile(i)"
+                    >
+                        <i class='bx bx-x'></i>
+                    </button>
                 </div>
-                <div class="preview-item" *ngFor="let url of existingImages">
+            </div>
+
+            <div class="preview-grid" *ngIf="existingImages.length > 0">
+                <div
+                    class="preview-item"
+                    *ngFor="let url of existingImages"
+                >
                     <img [src]="url" alt="imagen existente">
+
                     <span class="existing-badge">Actual</span>
                 </div>
             </div>
         </div>
 
         <div class="form-footer">
-            <button type="button" class="btn-cancel" routerLink="/my-properties">Cancelar</button>
-            <button type="submit" class="btn-submit" [disabled]="loading">
+            <button
+                type="button"
+                class="btn-cancel"
+                routerLink="/my-properties"
+                [disabled]="loading"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="loading"
+            >
                 {{ loading ? 'Editando...' : 'Editar propiedad' }}
             </button>
         </div>

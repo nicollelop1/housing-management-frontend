@@ -16,13 +16,58 @@
       <i class='bx bx-building-house'></i> Mis propiedades
     </a>
 
-    <a routerLink="/contracts" routerLinkActive="active">
-      <i class='bx bx-file'></i> Contratos
+    <div class="requests-nav-wrap">
+      <button class="nav-requests-btn" [class.active]="contractsMenuOpen" (click)="toggleContractsMenu()">
+        <i class='bx bx-file'></i>
+        Contratos
+        <i class='bx bx-chevron-down'></i>
+      </button>
+
+      <div class="requests-dropdown" *ngIf="contractsMenuOpen">
+        <a routerLink="/contracts" [queryParams]="{tab: 'owner'}" (click)="contractsMenuOpen = false">
+          <i class='bx bx-home'></i>
+          <span>
+            <strong>Como propietario</strong>
+            <small>Contratos de tus propiedades</small>
+          </span>
+        </a>
+        <a routerLink="/contracts" [queryParams]="{tab: 'tenant'}" (click)="contractsMenuOpen = false">
+          <i class='bx bx-user'></i>
+          <span>
+            <strong>Como arrendatario</strong>
+            <small>Contratos donde eres inquilino</small>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="requests-nav-wrap">
+      <button class="nav-requests-btn" [class.active]="requestsMenuOpen" (click)="toggleRequestsMenu()">
+        <i class='bx bx-transfer'></i>
+        Solicitudes
+        <i class='bx bx-chevron-down'></i>
+      </button>
+
+      <div class="requests-dropdown" *ngIf="requestsMenuOpen">
+        <a routerLink="/rental-requests/owner" (click)="requestsMenuOpen = false">
+          <span>
+            <strong>Recibidas</strong>
+            <small>Como propietario</small>
+          </span>
+        </a>
+        <a routerLink="/rental-requests/tenant" (click)="requestsMenuOpen = false">
+          <span>
+            <strong>Enviadas</strong>
+            <small>Como arrendatario</small>
+          </span>
+        </a>
+      </div>
+    </div>
+    <a routerLink="/payments" (click)="menuOpen = false">
+      <i class='bx bx-credit-card'></i>
+      Mis pagos
     </a>
 
-    <a routerLink="/rental-requests/owner" routerLinkActive="active">
-      <i class='bx bx-transfer'></i> Solicitudes
-    </a>
 
   </nav>
 
@@ -38,8 +83,7 @@
 
     <div class="user" (click)="toggleMenu()">
       <ng-container *ngIf="currentUser$ | async as user; else guestIcon">
-        <div class="avatar">{{ user.primerNombre.charAt(0).toUpperCase() }}</div>
-      </ng-container>
+        <img class="avatar" [src]="user.profilePictureUrl" alt="Foto de perfil" /> </ng-container>
       <ng-template #guestIcon>
         <i class='bx bx-user-circle'></i>
       </ng-template>
@@ -65,9 +109,11 @@
 
         <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read"
           (click)="onNotificationClick(n)">
+
           <div class="notif-item-icon" [ngClass]="'notif-icon-' + n.type.toLowerCase()">
-            <i class='bx' [ngClass]="'bx-' + notifIcon(n.type)"></i>
+            <i class="bx" [ngClass]="notifIcon(n.type)"></i>
           </div>
+
 
           <div class="notif-item-body">
             <p class="notif-item-title">{{ n.title }}</p>
@@ -97,21 +143,19 @@
 
       <ng-container *ngIf="isLoggedIn; else guestMenu">
 
+        <ng-container *ngIf="currentUser$ | async as user">
+          <div class="user-dropdown-info">
+            <span class="user-name">{{ user.primerNombre }} {{ user.primerApellido }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+          <div class="dropdown-divider"></div>
+        </ng-container>
+
         <a routerLink="/profile/view" (click)="menuOpen = false">
           <i class='bx bx-user'></i>
           Ver perfil
         </a>
-
-        <a routerLink="/favorites" (click)="menuOpen = false">
-          <i class='bx bx-heart'></i>
-          Favoritos
-        </a>
-
-        <a routerLink="/contracts" (click)="menuOpen = false">
-          <i class='bx bx-credit-card'></i>
-          Pagos
-        </a>
-
+        
         <button class="logout-btn" (click)="logout()">
           <i class='bx bx-log-out'></i>
           Cerrar sesión

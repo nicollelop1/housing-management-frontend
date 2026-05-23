@@ -64,15 +64,18 @@ export class AuthService {
     return this.http.post<void>(`${this.AUTH_URL}/reset-password`, data);
   }
 
-  handleLoginSuccess(response: any): void {
+  handleLoginSuccess(response: LoginResponse): void {
 
-    console.log('respuesta:', response);
+    const token = response.accessToken;
 
-    localStorage.setItem('token', response.accessToken);
-
-    if (response.refreshToken) {
-      localStorage.setItem('refreshToken', response.refreshToken);
+    if (!token) {
+      console.error('No accessToken recibido', response);
+      return;
     }
+
+    this.setToken(token);
+
+    this.loadProfile();
   }
 
   handleRegisterSuccess(response: RegisterResponse, payload: RegisterRequest): void {
@@ -100,7 +103,6 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-
   setToken(token: string): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(TOKEN_KEY, token);
@@ -108,7 +110,8 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return localStorage.getItem(TOKEN_KEY);
   }
 
   removeToken(): void {
@@ -118,38 +121,9 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-
-    const token = this.getToken();
-
-    if (!token) {
-      return false;
-    }
-
-    const expired = this.isTokenExpired(token);
-
-    if (expired) {
-      this.removeToken();
-      this.clearUserFromStorage();
-      return false;
-    }
-
-    return true;
+    return !!this.getToken();
   }
 
-  private isTokenExpired(token: string): boolean {
-    try {
-
-      if (!token.includes('.')) {
-        return false;
-      }
-
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return Date.now() > payload.exp * 1000;
-
-    } catch {
-      return false;
-    }
-  }
 
   private saveUserToStorage(user: ProfileResponse): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -191,15 +165,9 @@ export class AuthService {
       if (!token) return;
 
       this.http.get<ProfileResponse>(this.PROFILE_URL).subscribe({
-        next: user => {
-          console.log('Profile recibido:', user);
-          this.setUser(user);
-        },
-        error: err => {
-          console.log('Error en profile:', err.status);
-        }
+        next: user => this.setUser(user),
+        error: err => console.log('Error en profile:', err.status)
       });
     }, 100);
-
   }
 }

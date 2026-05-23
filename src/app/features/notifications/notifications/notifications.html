@@ -5,11 +5,8 @@
             <h1>Notificaciones</h1>
             <p>Revisa toda tu actividad reciente</p>
         </div>
-        
-        <button 
-            class="btn-mark-all" 
-            (click)="markAllAsRead()" 
-            *ngIf="!loading && getUnreadCount() > 0">
+
+        <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="!loading && getUnreadCount() > 0">
             <i class='bx bx-check-double'></i>
             Marcar todas como leídas ({{ getUnreadCount() }})
         </button>
@@ -27,14 +24,11 @@
     </div>
 
     <div class="notifications-list" *ngIf="!loading && notifications.length > 0">
-        <div 
-            class="notification-card" 
-            *ngFor="let notification of notifications" 
-            [class.unread]="!notification.read"
+        <div class="notification-card" *ngFor="let notification of notifications" [class.unread]="!notification.read"
             (click)="openNotification(notification)">
-            
+
             <div class="notif-icon" [ngClass]="'notif-' + notification.type.toLowerCase()">
-                <i class='bx' [ngClass]="'bx-' + notifIcon(notification.type)"></i>
+                <i class="bx" [ngClass]="notifIcon(notification.type)"></i>
             </div>
 
             <div class="notif-content">

@@ -2,7 +2,6 @@ import {
   Component,
   OnInit,
   ChangeDetectorRef,
-  afterNextRender,
   OnDestroy
 } from '@angular/core';
 
@@ -21,7 +20,7 @@ import { Notification } from '../../../core/models/notification';
 })
 export class Notifications implements OnInit, OnDestroy {
 
-  notifications: Notification[] = [];
+  notifications: Notification[] = []; 
   loading = true;
   private pendingUpdates = new Set<string>();
 
@@ -29,13 +28,11 @@ export class Notifications implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {
-    afterNextRender(() => {
-      this.loadNotifications();
-    });
-  }
+  ) {}
 
-  ngOnInit(): void { }
+  ngOnInit(): void { 
+    this.loadNotifications();
+  }
 
   ngOnDestroy(): void {
     this.pendingUpdates.clear();
@@ -53,7 +50,8 @@ export class Notifications implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error al cargar notificaciones:', err);
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -61,47 +59,53 @@ export class Notifications implements OnInit, OnDestroy {
   }
 
   openNotification(notification: Notification): void {
-    if (!notification.read && !this.pendingUpdates.has(notification.id)) {
-      this.pendingUpdates.add(notification.id);
-      
-      notification.read = true;
-      this.cdr.detectChanges();
-
-      this.notificationService.markAsRead(notification.id).subscribe({
-        next: () => {
-          console.log('Notificación marcada como leída:', notification.id);
-          this.pendingUpdates.delete(notification.id);
-        },
-        error: (err) => {
-          console.error('Error al marcar como leída:', err);
-          notification.read = false;
-          this.pendingUpdates.delete(notification.id);
-          this.cdr.detectChanges();
-        }
-      });
+    if (notification.read) {
+      this.handleNavigation(notification);
+      return;
     }
 
-    setTimeout(() => {
-      if (notification.contractId) {
-        this.router.navigate(['/contracts', notification.contractId]);
-        return;
-      }
+    if (this.pendingUpdates.has(notification.id)) return;
 
-      if (notification.type === 'RENTAL_REQUEST') {
-        this.router.navigate(['/rental-requests/owner']);
-        return;
+    this.pendingUpdates.add(notification.id);
+    
+    notification.read = true;
+    this.cdr.detectChanges();
+
+    this.notificationService.markAsRead(notification.id).subscribe({
+      next: () => {
+        console.log('Backend actualizó con éxito:', notification.id);
+        this.pendingUpdates.delete(notification.id);
+        this.handleNavigation(notification);
+      },
+      error: (err) => {
+        console.error('El backend falló al marcar como leída:', err);
+        notification.read = false;
+        this.pendingUpdates.delete(notification.id);
+        this.cdr.detectChanges();
       }
-      
-      if (notification.type === 'PAYMENT') {
-        this.router.navigate(['/contracts']);
-        return;
-      }
-      
-      if (notification.type === 'SYSTEM') {
-        this.router.navigate(['/home']);
-        return;
-      }
-    }, 150);
+    });
+  }
+
+  private handleNavigation(notification: Notification): void {
+    if (notification.contractId) {
+      this.router.navigate(['/contracts', notification.contractId]);
+      return;
+    }
+
+    if (notification.type === 'RENTAL_REQUEST') {
+      this.router.navigate(['/rental-requests/owner']);
+      return;
+    }
+    
+    if (notification.type === 'PAYMENT') {
+      this.router.navigate(['/contracts']);
+      return;
+    }
+    
+    if (notification.type === 'SYSTEM') {
+      this.router.navigate(['/home']);
+      return;
+    }
   }
 
   markAllAsRead(): void {
@@ -121,7 +125,7 @@ export class Notifications implements OnInit, OnDestroy {
           this.pendingUpdates.delete(notif.id);
         },
         error: (err) => {
-          console.error('Error marcando como leída:', notif.id, err);
+          console.error('Error marcando como leída en lote:', notif.id, err);
           notif.read = false;
           this.pendingUpdates.delete(notif.id);
           this.cdr.detectChanges();
